@@ -13,31 +13,25 @@ red_color = RGBColor(255, 0, 0)
 first_el = 0
 last_el = -1
 
-# TODO варианты расположения word/phrase в документе:
-#  * `word` целиком в `run`, других слов нет           +
-#  * `word` целиком в `run`, есть слово до             +
-#  * `word` целиком в `run`, есть слово после          +
-#  * `word` целиком в `run`, есть слова до и после     +
-#  * `word` разбит на несколько `run`                  -
-#  * `phrase` целиком в `run`, других слов нет         +
-#  * `phrase` целиком в `run`, есть слово до           +
-#  * `phrase` целиком в `run`, есть слово после        +
-#  * `phrase` целиком в `run`, есть слова до и после   +
-#  * `phrase` разбит на несколько `run`                -
+# TODO варианты расположения `string` в документе:
+#  * `string` целиком в `run`, других слов нет           +
+#  * `string` целиком в `run`, есть слово до             +
+#  * `string` целиком в `run`, есть слово после          +
+#  * `string` целиком в `run`, есть слова до и после     +
+#  * `string` разбит на несколько `run`                  -
 #  ----------------------------------------------------------------------------
 #  Проблема: если `run` с искомым `word` покрашен - цвет не сохраняется
 #  Возможно, также не сохраняются другие свойства - проверить
 
-word = 'ЦЕЛИКОМ'
-# word = 'СЛОВА'
-# word = 'СЛОВЕЧКО'
-# word = 'СЛОВО'
-# word = 'СЛОВИЩЕ'
-
-# word = 'ФРАЗА ЦЕЛИКОМ'
-# word = 'ФРАЗА СО СЛОВАМИ ДО'
-# word = 'ФРАЗА СО СЛОВАМИ ПОСЛЕ'
-# word = 'ФРАЗА ДО И ПОСЛЕ'
+string = 'ЦЕЛИКОМ'
+# string = 'СЛОВА'
+# string = 'СЛОВЕЧКО'
+# string = 'СЛОВО'
+# string = 'СЛОВИЩЕ'
+# string = 'ФРАЗА ЦЕЛИКОМ'
+# string = 'ФРАЗА СО СЛОВАМИ ДО'
+# string = 'ФРАЗА СО СЛОВАМИ ПОСЛЕ'
+# string = 'ФРАЗА ДО И ПОСЛЕ'
 
 for p in [el for el in d.elements if isinstance(el, Paragraph)]:
     # if word not in p.text:
@@ -46,12 +40,12 @@ for p in [el for el in d.elements if isinstance(el, Paragraph)]:
 
 for p in [el for el in d.elements if isinstance(el, Paragraph)]:
 
-    if word not in p.text:
+    if string not in p.text:
         continue
 
-    if word in [r.text.strip() for r in p.runs]:
+    if string in [r.text.strip() for r in p.runs]:
         for r in p.runs:
-            if word == r.text.strip():
+            if string == r.text.strip():
                 r.font.color.rgb = RGBColor(255, 0, 0)
                 break
         break
@@ -65,15 +59,15 @@ for p in [el for el in d.elements if isinstance(el, Paragraph)]:
     for i in range(runs_number):
         r_new = p_runs_new.pop(first_el)
         r_same = p_runs_same.pop(first_el)
-        if word not in r_new.text:
+        if string not in r_new.text:
             p.append_runs([r_same])
             count += 2
             p.runs[count-1].clear()
             continue
-        divided_runs_text = r_new.text.split(word, maxsplit=1)
+        divided_runs_text = r_new.text.split(string, maxsplit=1)
         run = p.add_run(divided_runs_text[first_el], r_new.style)
         run.element.font = r_new.font
-        founded_text_run = p.add_run(word, r_new.style)
+        founded_text_run = p.add_run(string, r_new.style)
         founded_text_run.element.font = r_new.font
         run = p.add_run(divided_runs_text[last_el], r_new.style)
         run.element.font = r_new.font
