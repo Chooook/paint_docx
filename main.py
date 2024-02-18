@@ -5,7 +5,9 @@ from docx.text.paragraph import Paragraph
 from docx.shared import RGBColor
 from docx import Document
 
-MyRun = namedtuple('MyRun', 'text style font')
+DEBUG = False
+
+MyRun = namedtuple('MyRun', ['text', 'style', 'font'])
 
 d = Document('template.docx')
 
@@ -33,10 +35,11 @@ string = 'ЦЕЛИКОМ'
 # string = 'ФРАЗА СО СЛОВАМИ ПОСЛЕ'
 # string = 'ФРАЗА ДО И ПОСЛЕ'
 
-for p in [el for el in d.elements if isinstance(el, Paragraph)]:
-    # if word not in p.text:
-    #     continue
-    pprint([r.text for r in p.runs])
+if DEBUG:
+    for p in [el for el in d.elements if isinstance(el, Paragraph)]:
+        # if string not in p.text:
+        #     continue
+        pprint([r.text for r in p.runs])
 
 for p in [el for el in d.elements if isinstance(el, Paragraph)]:
 
@@ -55,14 +58,15 @@ for p in [el for el in d.elements if isinstance(el, Paragraph)]:
     p.clear()
     runs_number = len(p_runs_new)
 
-    count = -1
+    run_count = -1  # 0 это уже первый элемент, поэтому -1
     for i in range(runs_number):
         r_new = p_runs_new.pop(first_el)
         r_same = p_runs_same.pop(first_el)
         if string not in r_new.text:
             p.append_runs([r_same])
-            count += 2
-            p.runs[count-1].clear()
+            run_count += 2  # append_runs добавляет Run(' ') в начало
+            prev_run = run_count - 1
+            p.runs[prev_run].clear()  # Run(' ') нам не нужен
             continue
         divided_runs_text = r_new.text.split(string, maxsplit=1)
         run = p.add_run(divided_runs_text[first_el], r_new.style)
@@ -72,19 +76,20 @@ for p in [el for el in d.elements if isinstance(el, Paragraph)]:
         run = p.add_run(divided_runs_text[last_el], r_new.style)
         run.element.font = r_new.font
         founded_text_run.font.color.rgb = red_color
-        count += 3
+        run_count += 3  # считаем разбитый на 3 части run
         break
     for r in p_runs_same:
         run = p.append_runs([r])
-        count += 2
-        p.runs[count-1].clear()
+        run_count += 2  # append_runs добавляет Run(' ') в начало
+        prev_run = run_count - 1
+        p.runs[prev_run].clear()  # Run(' ') нам не нужен
     break
 
-# print('-'*100)
-# for p in [el for el in d.elements if isinstance(el, Paragraph)]:
-#     if word not in p.text:
-#         continue
-#     pprint([r.text for r in p.runs])
-
+if DEBUG:
+    print('-'*100)
+    for p in [el for el in d.elements if isinstance(el, Paragraph)]:
+        # if string not in p.text:
+        #     continue
+        pprint([r.text for r in p.runs])
 
 d.save('new.docx')
