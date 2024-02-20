@@ -104,16 +104,15 @@ class DocxPainter:
         third_run.text = text_parts[self.last_el]
         return [first_run, second_run, third_run]
 
-    def __add_runs(self, p: Paragraph, runs: list[Run]):
+    @staticmethod
+    def __add_runs(p: Paragraph, runs: list[Run]):
+        runs_number = len(p.runs)
         p.append_runs(runs)
         # append_runs ставит Run(' ') в начало, убираем
-        self.__clear_first_run(p)
-
-    @staticmethod
-    def __clear_first_run(p: Paragraph):
-        p.runs[0].clear()
+        p.runs[runs_number].clear()
 
     def __find_runs_with_phrase(self, p: Paragraph, phrase: str):
+        # собирать посимвольно всю фразу поочереди прогоняя раны
         ...
 
 
@@ -126,10 +125,10 @@ if __name__ == '__main__':
     #  * `string` разбит на несколько `run`                  -
     #  ------------------------------------------------------------------------
 
-    expected = 'ФРАЗА ЦЕЛИКОМ'
+    # expected = 'ФРАЗА ЦЕЛИКОМ'
     # expected = 'ФРАЗА СО СЛОВАМИ ДО'
     # expected = 'ФРАЗА СО СЛОВАМИ ПОСЛЕ'
-    # expected = 'ФРАЗА ДО И ПОСЛЕ'
+    expected = 'ФРАЗА ДО И ПОСЛЕ'
     # expected = 'СЛОВИЩЕ'
 
     def debug(ptr):
