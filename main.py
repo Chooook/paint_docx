@@ -5,8 +5,6 @@ from docx.text.paragraph import Paragraph, Run
 from docx.shared import RGBColor
 from docx import Document
 
-# TODO искать подмножество run`ов, которые соответствуют фразе, дальше
-#  думать что делать и как их разбивать.
 MyRun = namedtuple('MyRun', ['text', 'style'])
 NewOrigRun = namedtuple('NewOrigRun', ['new', 'original'])
 
@@ -44,42 +42,46 @@ class DocxPainter:
         phrase = phrase.strip()
         p = self.__get_paragraph_with_phrase(phrase)
         try:
-            run = self.__find_run(p, phrase, strict=True)
+            run = self.__find_run_with_phrase(p, phrase, strict=True)
             self.__color_run(run)
             return
         except ValueError:
             pass
         try:
-            run = self.__find_run(p, phrase, strict=False)
-            run = self.__reshape_phrase_run(p, run, phrase)
+            run = self.__find_run_with_phrase(p, phrase, strict=False)
+            run = self.__reshape_run_with_phrase(p, run, phrase)
             self.__color_run(run)
         except ValueError:
             pass
-        # иначе искать группу run`ов
+        runs = self.__find_runs_with_phrase(p, phrase)
+        # TODO иначе искать группу run`ов
 
     def __get_paragraph_with_phrase(self, phrase: str) -> Paragraph:
         for p in self.__paragraphs:
             if phrase in p.text:
                 return p
-        raise ValueError('Фраза не найдена в тексте.')
+        err_text = 'В тексте нет искомой фразы'
+        raise ValueError(err_text)
 
     @staticmethod
-    def __find_run(p: Paragraph, phrase: str, strict: bool = True):
+    def __find_run_with_phrase(p: Paragraph, phrase: str, strict: bool = True):
         if strict:
             for r in p.runs:
                 if phrase == r.text.strip():
                     return r
-            raise ValueError('Не найдено объекта run, соответствующего фразе.')
+            err_text = 'В параграфе нет объекта run, соответствующего фразе'
+            raise ValueError(err_text)
         else:
             for r in p.runs:
                 if phrase in r.text:
                     return r
-            raise ValueError('Не найдено объекта run, содержащего фразу.')
+            err_text = 'В параграфе нет объекта run, содержащего фразу'
+            raise ValueError(err_text)
 
     def __color_run(self, run: Run):
         run.font.color.rgb = self.clr.red
 
-    def __reshape_phrase_run(self, p: Paragraph, run: Run, phrase: str):
+    def __reshape_run_with_phrase(self, p: Paragraph, run: Run, phrase: str):
         # TODO попробовать выделить отсюда часть по сборке параграфа
         run_with_phrase_after_split_index = 1
         run_index = [r.text for r in p.runs].index(run.text)
@@ -92,11 +94,6 @@ class DocxPainter:
         self.__add_runs(p, runs)
         return run_with_phrase
 
-    def __add_runs(self, p: Paragraph, runs: list[Run]):
-        p.append_runs(runs)
-        # append_runs ставит Run(' ') в начало, убираем
-        self.__clear_first_run(p)
-
     def __split_run(self, run: Run, phrase: str):
         text_parts = run.text.split(phrase, maxsplit=1)
         first_run = deepcopy(run)
@@ -107,9 +104,17 @@ class DocxPainter:
         third_run.text = text_parts[self.last_el]
         return [first_run, second_run, third_run]
 
+    def __add_runs(self, p: Paragraph, runs: list[Run]):
+        p.append_runs(runs)
+        # append_runs ставит Run(' ') в начало, убираем
+        self.__clear_first_run(p)
+
     @staticmethod
     def __clear_first_run(p: Paragraph):
         p.runs[0].clear()
+
+    def __find_runs_with_phrase(self, p: Paragraph, phrase: str):
+        ...
 
 
 if __name__ == '__main__':
