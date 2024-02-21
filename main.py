@@ -40,7 +40,8 @@ class DocxPainter:
         for p in self.paragraphs:
             if not self.__find_phrase(p, phrase, strict=False):
                 continue
-            for r in p.runs:
+            runs_to_color = self.__find_phrase_in_runs_combinations(p, phrase)
+            for phrase, r in runs_to_color.items():
                 if self.__find_phrase(r, phrase, strict=True):
                     self.__color_r(r)
                     if first_only:
@@ -52,10 +53,6 @@ class DocxPainter:
                     if first_only:
                         return
                     continue
-                # runs = self.__find_runs_with_phrase(p, phrase)
-            # FIXME собьётся итерация если сделать reshape? мб нет потому
-            #  что количество увеличивается
-            # TODO иначе искать группу run`ов
 
     @staticmethod
     def __find_phrase(
@@ -101,18 +98,45 @@ class DocxPainter:
         # append_runs ставит Run(' ') в начало, убираем
         p.runs[runs_number].clear()
 
-    def __find_runs_with_phrase(self, p: Paragraph, phrase: str):
-        # собирать посимвольно всю фразу поочереди прогоняя раны
-        ...
+    def __find_phrase_in_runs_combinations(
+            self, p: Paragraph, phrase: str) -> dict[str: Run]:
+        # FIXME не ищет несколько вхождений в одном параграфе
+        runs = p.runs
+        symbols = list(phrase)
+        runs_combination = {}
+        for r in runs:
+            r_symbols = list(r.text)
+            r_contains = []
+            for r_symbol in r_symbols:
+                try:
+                    symbol = symbols.pop(self.first_el)
+                    if r_symbol != symbol:
+                        runs_combination.clear()
+                        r_contains.clear()
+                        symbols = self.__phrase_symbols_renew(phrase)
+                        continue
+                    r_contains.append(symbol)
+                except IndexError:
+                    break
+            if r_contains:
+                runs_combination.update({''.join(r_contains): r})
+            if not symbols:
+                print(phrase, r, p.text, sep='|||')
+                return runs_combination
+        return {}
+
+    @staticmethod
+    def __phrase_symbols_renew(phrase):
+        return list(phrase)
 
 
 if __name__ == '__main__':
-    # TODO варианты расположения `string` в документе:
-    #  * `string` целиком в `run`, других слов нет           +
-    #  * `string` целиком в `run`, есть слово до             +
-    #  * `string` целиком в `run`, есть слово после          +
-    #  * `string` целиком в `run`, есть слова до и после     +
-    #  * `string` разбит на несколько `run`                  -
+    # TODO варианты расположения `phrase` в документе:
+    #  * `phrase` целиком в `run`, других слов нет           +
+    #  * `phrase` целиком в `run`, есть слово до             +
+    #  * `phrase` целиком в `run`, есть слово после          +
+    #  * `phrase` целиком в `run`, есть слова до и после     +
+    #  * `phrase` разбит на несколько `run`                  -
     #  * покраска таблиц в .docx                             -
     #  * покраска всех вхождений одного слова                +
     #  ------------------------------------------------------------------------
