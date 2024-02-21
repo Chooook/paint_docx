@@ -5,6 +5,7 @@ from docx.shared import RGBColor
 from docx import Document
 
 
+#  TODO: покраска таблиц в .docx, возможность выбора цвета
 class ColorPalette:
     red = RGBColor(255, 0, 0)
     orange = RGBColor(255, 255, 0)
@@ -15,8 +16,6 @@ class ColorPalette:
 
 
 class DocxPainter:
-
-    DEBUG = False
     first_el = 0
     last_el = -1
 
@@ -135,19 +134,7 @@ class DocxPainter:
 
 
 if __name__ == '__main__':
-    # Варианты расположения `phrase` в документе:
-    #  * `phrase` целиком в `run`, других слов нет           +
-    #  * `phrase` целиком в `run`, есть слово до             +
-    #  * `phrase` целиком в `run`, есть слово после          +
-    #  * `phrase` целиком в `run`, есть слова до и после     +
-    #  * `phrase` разбит на несколько `run`                  +
-    #  * покраска таблиц в .docx                             -
-    #  * покраска всех вхождений одного слова                +
-    #  ------------------------------------------------------------------------
-
     expected = 'СЛОВО'
-    # expected = 'СЛОВИЩЕ'
-
     d = Document('template.docx')
     painter = DocxPainter(d)
     painter.color_phrase(expected)
