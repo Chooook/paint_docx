@@ -40,8 +40,8 @@ class DocxPainter:
         for p in self.paragraphs:
             if not self.__find_phrase(p, phrase, strict=False):
                 continue
-            runs_to_color = self.__find_phrase_in_runs_combinations(p, phrase)
-            for phrase, r in runs_to_color.items():
+            runs_to_color = self.__find_phrase_in_runs(p.runs, phrase)
+            for r, phrase in runs_to_color:
                 if self.__find_phrase(r, phrase, strict=True):
                     self.__color_r(r)
                     if first_only:
@@ -98,10 +98,8 @@ class DocxPainter:
         # append_runs ставит Run(' ') в начало, убираем
         p.runs[runs_number].clear()
 
-    def __find_phrase_in_runs_combinations(
-            self, p: Paragraph, phrase: str) -> dict[str: Run]:
-        # FIXME не ищет несколько вхождений в одном параграфе
-        runs = p.runs
+    def __find_phrase_in_runs(
+            self, runs: list[Run], phrase: str) -> dict[str: Run]:
         symbols = list(phrase)
         runs_combination = {}
         for r in runs:
@@ -117,13 +115,19 @@ class DocxPainter:
                         continue
                     r_contains.append(symbol)
                 except IndexError:
-                    break
+                    value = ''.join(r_contains)
+                    runs_combination.update({r: value})
+                    if value:
+                        yield r, runs_combination[r]
+                    runs_combination.clear()
+                    r_contains.clear()
+                    symbols = self.__phrase_symbols_renew(phrase)
+                    continue
             if r_contains:
-                runs_combination.update({''.join(r_contains): r})
-            if not symbols:
-                print(phrase, r, p.text, sep='|||')
-                return runs_combination
-        return {}
+                value = ''.join(r_contains)
+                runs_combination.update({r: value})
+                if value:
+                    yield r, runs_combination[r]
 
     @staticmethod
     def __phrase_symbols_renew(phrase):
@@ -131,12 +135,12 @@ class DocxPainter:
 
 
 if __name__ == '__main__':
-    # TODO варианты расположения `phrase` в документе:
+    # Варианты расположения `phrase` в документе:
     #  * `phrase` целиком в `run`, других слов нет           +
     #  * `phrase` целиком в `run`, есть слово до             +
     #  * `phrase` целиком в `run`, есть слово после          +
     #  * `phrase` целиком в `run`, есть слова до и после     +
-    #  * `phrase` разбит на несколько `run`                  -
+    #  * `phrase` разбит на несколько `run`                  +
     #  * покраска таблиц в .docx                             -
     #  * покраска всех вхождений одного слова                +
     #  ------------------------------------------------------------------------
