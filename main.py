@@ -65,39 +65,6 @@ class DocxPainter:
                 return True
         return False
 
-    def __color_r(self, r: Run):
-        r.font.color.rgb = self.clr.red
-
-    def __reshape_r_with_phrase(self, p: Paragraph, r: Run, phrase: str):
-        # TODO попробовать выделить отсюда часть по сборке параграфа
-        r_with_phrase_after_split_index = 1
-        r_index = [r.text for r in p.runs].index(r.text)
-        runs_before_phrase = p.runs[:r_index]
-        new_runs = self.__split_r(r, phrase)
-        runs_after_phrase = p.runs[r_index+1:]
-        r_with_phrase = new_runs[r_with_phrase_after_split_index]
-        runs = runs_before_phrase + new_runs + runs_after_phrase
-        p.clear()
-        self.__add_runs(p, runs)
-        return r_with_phrase
-
-    def __split_r(self, r: Run, phrase: str):
-        text_parts = r.text.split(phrase, maxsplit=1)
-        first_r = deepcopy(r)
-        first_r.text = text_parts[self.first_el]
-        second_r = deepcopy(r)
-        second_r.text = phrase
-        third_r = deepcopy(r)
-        third_r.text = text_parts[self.last_el]
-        return [first_r, second_r, third_r]
-
-    @staticmethod
-    def __add_runs(p: Paragraph, runs: list[Run]):
-        runs_number = len(p.runs)
-        p.append_runs(runs)
-        # append_runs ставит Run(' ') в начало, убираем
-        p.runs[runs_number].clear()
-
     def __find_phrase_in_runs(
             self, runs: list[Run], phrase: str) -> dict[str: Run]:
         symbols = list(phrase)
@@ -132,6 +99,39 @@ class DocxPainter:
     @staticmethod
     def __phrase_symbols_renew(phrase):
         return list(phrase)
+
+    def __color_r(self, r: Run):
+        r.font.color.rgb = self.clr.red
+
+    def __reshape_r_with_phrase(self, p: Paragraph, r: Run, phrase: str):
+        # TODO попробовать выделить отсюда часть по сборке параграфа
+        r_with_phrase_after_split_index = 1
+        r_index = [r.text for r in p.runs].index(r.text)
+        runs_before_phrase = p.runs[:r_index]
+        new_runs = self.__split_r(r, phrase)
+        runs_after_phrase = p.runs[r_index+1:]
+        r_with_phrase = new_runs[r_with_phrase_after_split_index]
+        runs = runs_before_phrase + new_runs + runs_after_phrase
+        p.clear()
+        self.__add_runs(p, runs)
+        return r_with_phrase
+
+    def __split_r(self, r: Run, phrase: str):
+        text_parts = r.text.split(phrase, maxsplit=1)
+        first_r = deepcopy(r)
+        first_r.text = text_parts[self.first_el]
+        second_r = deepcopy(r)
+        second_r.text = phrase
+        third_r = deepcopy(r)
+        third_r.text = text_parts[self.last_el]
+        return [first_r, second_r, third_r]
+
+    @staticmethod
+    def __add_runs(p: Paragraph, runs: list[Run]):
+        runs_number = len(p.runs)
+        p.append_runs(runs)
+        # append_runs ставит Run(' ') в начало, убираем
+        p.runs[runs_number].clear()
 
 
 if __name__ == '__main__':
