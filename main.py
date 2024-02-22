@@ -39,7 +39,8 @@ class DocxPainter:
         for p in self.paragraphs:
             if not self.__find_phrase(p, phrase, strict=False):
                 continue
-            runs_to_color = self.__find_phrase_in_runs(p.runs, phrase)
+            start = 0
+            runs_to_color = self.__find_phrase_in_runs(p.runs[start:], phrase)
             for r, phrase in runs_to_color:
                 if self.__find_phrase(r, phrase, strict=True):
                     self.__color_r(r)
@@ -47,6 +48,7 @@ class DocxPainter:
                         return
                     continue
                 if self.__find_phrase(r, phrase, strict=False):
+                    start = [r.text for r in p.runs].index(r.text)
                     run = self.__reshape_r_with_phrase(p, r, phrase)
                     self.__color_r(run)
                     if first_only:
