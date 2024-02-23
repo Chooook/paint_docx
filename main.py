@@ -62,7 +62,8 @@ class DocxPainter:
                             color: str,
                             first_only: bool = False
                             ) -> list[Run]:
-        runs_with_phrase = self.__find_phrase_in_runs(p.runs[start:], phrase)
+        runs_to_check = p.runs[start:]
+        runs_with_phrase = self.__find_phrase_in_runs(runs_to_check, phrase)
         runs_to_color = []
         for r, phrase in runs_with_phrase:
             if self.__find_phrase(r, phrase, strict=True):
