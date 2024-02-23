@@ -1,4 +1,5 @@
 from copy import deepcopy
+from typing import List, Dict, Generator
 
 from docx.text.paragraph import Paragraph, Run
 from docx import Document
@@ -19,13 +20,18 @@ class DocxPainter:
     def paragraphs(self) -> list[Paragraph]:
         return self.__paragraphs
 
-    def color_list_of_phrases(self, phrases: list[str],
-                              first_only: bool = False, color: str = 'red'):
+    def color_phrases_list(self,
+                           phrases: list[str],
+                           first_only: bool = False,
+                           color: str = 'red') -> None:
         for phrase in phrases:
             self.color_phrase(phrase, first_only, color)
 
-    def color_phrase(self, phrase: str,
-                     first_only: bool = False, color: str = 'red'):
+    def color_phrase(self,
+                     phrase: str,
+                     first_only: bool = False,
+                     color: str = 'red'
+                     ) -> None:
         phrase = phrase.strip()
         for p in self.paragraphs:
             if not self.__find_phrase(p, phrase, strict=False):
@@ -63,8 +69,10 @@ class DocxPainter:
         return runs_to_color
 
     @staticmethod
-    def __find_phrase(el: Run or Paragraph, phrase: str,
-                      strict: bool = True) -> bool:
+    def __find_phrase(el: Run | Paragraph,
+                      phrase: str,
+                      strict: bool = True
+                      ) -> bool:
         if strict:
             if phrase == el.text.strip():
                 return True
@@ -73,13 +81,15 @@ class DocxPainter:
                 return True
         return False
 
-    def __find_phrase_in_runs(self, runs: list[Run],
-                              phrase: str) -> dict[str: Run]:
+    def __find_phrase_in_runs(self,
+                              runs: List[Run],
+                              phrase: str
+                              ) -> Generator[tuple[Run, str], None, None]:
         symbols = list(phrase)
-        runs_combination = {}
+        runs_combination: Dict[Run, str] = {}
         for r in runs:
             r_symbols = list(r.text)
-            r_contains = []
+            r_contains: List[str] = []
             for r_symbol in r_symbols:
                 try:
                     symbol = symbols.pop(Index.first)
@@ -105,19 +115,22 @@ class DocxPainter:
                     yield r, runs_combination[r]
 
     @staticmethod
-    def __phrase_symbols_renew(phrase):
+    def __phrase_symbols_renew(phrase: str) -> list[str]:
         return list(phrase)
 
-    def __color_r(self, r: Run, color: str):
+    def __color_r(self, r: Run, color: str) -> None:
         r.font.color.rgb = self.clr[color]
 
-    def __reshape_r_with_phrase(self, p: Paragraph, r: Run, phrase: str):
+    def __reshape_r_with_phrase(self,
+                                p: Paragraph,
+                                r: Run,
+                                phrase: str) -> Run:
         # TODO попробовать выделить отсюда часть по сборке параграфа
         r_with_phrase_after_split_index = 1
         r_index = [r.text for r in p.runs].index(r.text)
         runs_before_phrase = p.runs[:r_index]
         new_runs = self.__split_r(r, phrase)
-        runs_after_phrase = p.runs[r_index+1:]
+        runs_after_phrase = p.runs[r_index + 1:]
         r_with_phrase = new_runs[r_with_phrase_after_split_index]
         runs = runs_before_phrase + new_runs + runs_after_phrase
         p.clear()
@@ -125,7 +138,7 @@ class DocxPainter:
         return r_with_phrase
 
     @staticmethod
-    def __split_r(r: Run, phrase: str):
+    def __split_r(r: Run, phrase: str) -> list[Run]:
         text_parts = r.text.split(phrase, maxsplit=1)
         first_r = deepcopy(r)
         first_r.text = text_parts[Index.first]
@@ -136,7 +149,7 @@ class DocxPainter:
         return [first_r, second_r, third_r]
 
     @staticmethod
-    def __add_runs(p: Paragraph, runs: list[Run]):
+    def __add_runs(p: Paragraph, runs: list[Run]) -> None:
         runs_number = len(p.runs)
         p.append_runs(runs)
         # append_runs ставит Run(' ') в начало, убираем

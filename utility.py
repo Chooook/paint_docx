@@ -12,7 +12,7 @@ class Color:
     blue = RGBColor(0, 0, 255)
     purple = RGBColor(255, 0, 255)
 
-    def __getitem__(self, item):
+    def __getitem__(self, item: str) -> RGBColor:
         try:
             return getattr(self, item)
         except AttributeError:
