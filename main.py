@@ -41,6 +41,19 @@ class DocxPainter:
                     p, phrase, color, start, first_only):
                 self.__color_r(r, color)
 
+    @staticmethod
+    def __find_phrase(el: Run | Paragraph,
+                      phrase: str,
+                      strict: bool = True
+                      ) -> bool:
+        if strict:
+            if phrase == el.text.strip():
+                return True
+        else:
+            if phrase in el.text:
+                return True
+        return False
+
     def __get_runs_to_color(self,
                             p: Paragraph,
                             phrase: str,
@@ -67,19 +80,6 @@ class DocxPainter:
                 runs_to_color += runs_after_reshape
                 break
         return runs_to_color
-
-    @staticmethod
-    def __find_phrase(el: Run | Paragraph,
-                      phrase: str,
-                      strict: bool = True
-                      ) -> bool:
-        if strict:
-            if phrase == el.text.strip():
-                return True
-        else:
-            if phrase in el.text:
-                return True
-        return False
 
     def __find_phrase_in_runs(self,
                               runs: List[Run],
@@ -118,13 +118,11 @@ class DocxPainter:
     def __phrase_symbols_renew(phrase: str) -> list[str]:
         return list(phrase)
 
-    def __color_r(self, r: Run, color: str) -> None:
-        r.font.color.rgb = self.clr[color]
-
     def __reshape_r_with_phrase(self,
                                 p: Paragraph,
                                 r: Run,
-                                phrase: str) -> Run:
+                                phrase: str
+                                ) -> Run:
         # TODO попробовать выделить отсюда часть по сборке параграфа
         r_with_phrase_after_split_index = 1
         r_index = [r.text for r in p.runs].index(r.text)
@@ -154,6 +152,9 @@ class DocxPainter:
         p.append_runs(runs)
         # append_runs ставит Run(' ') в начало, убираем
         p.runs[runs_number].clear()
+
+    def __color_r(self, r: Run, color: str) -> None:
+        r.font.color.rgb = self.clr[color]
 
 
 if __name__ == '__main__':
