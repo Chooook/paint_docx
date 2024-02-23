@@ -1,8 +1,8 @@
 from copy import deepcopy
 from typing import List, Dict, Generator
 
-from docx.text.paragraph import Paragraph, Run
 from docx import Document
+from docx.text.paragraph import Paragraph, Run
 
 from utility import Index, Color
 
@@ -22,16 +22,16 @@ class DocxPainter:
 
     def color_phrases_list(self,
                            phrases: list[str],
-                           first_only: bool = False,
-                           color: str = 'red'
+                           color: str = 'red',
+                           first_only: bool = False
                            ) -> None:
         for phrase in phrases:
-            self.color_phrase(phrase, first_only, color)
+            self.color_phrase(phrase, color, first_only)
 
     def color_phrase(self,
                      phrase: str,
-                     first_only: bool = False,
-                     color: str = 'red'
+                     color: str = 'red',
+                     first_only: bool = False
                      ) -> None:
         phrase = phrase.strip()
         for p in self.paragraphs:
@@ -39,7 +39,7 @@ class DocxPainter:
                 continue
             start = 0
             for r in self.__get_runs_to_color(
-                    p, phrase, color, start, first_only):
+                    p, phrase, start, color, first_only):
                 self.__color_r(r, color)
 
     @staticmethod
@@ -58,8 +58,8 @@ class DocxPainter:
     def __get_runs_to_color(self,
                             p: Paragraph,
                             phrase: str,
-                            color: str,
                             start: int,
+                            color: str,
                             first_only: bool = False
                             ) -> list[Run]:
         runs_with_phrase = self.__find_phrase_in_runs(p.runs[start:], phrase)
@@ -77,7 +77,7 @@ class DocxPainter:
                     return [run, ]
                 runs_to_color.append(run)
                 runs_after_reshape = self.__get_runs_to_color(
-                    p, phrase, color, start)
+                    p, phrase, start, color)
                 runs_to_color += runs_after_reshape
                 break
         return runs_to_color
@@ -162,5 +162,5 @@ if __name__ == '__main__':
     expected = 'СЛОВО'
     d = Document('template.docx')
     painter = DocxPainter(d)
-    painter.color_phrase(expected)
+    painter.color_phrase(expected, 'magenta')
     d.save('new.docx')
