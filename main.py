@@ -23,7 +23,8 @@ class DocxPainter:
     def color_phrases_list(self,
                            phrases: list[str],
                            first_only: bool = False,
-                           color: str = 'red') -> None:
+                           color: str = 'red'
+                           ) -> None:
         for phrase in phrases:
             self.color_phrase(phrase, first_only, color)
 
@@ -139,10 +140,10 @@ class DocxPainter:
     def __split_r(r: Run, phrase: str) -> list[Run]:
         text_parts = r.text.split(phrase, maxsplit=1)
         first_r = deepcopy(r)
-        first_r.text = text_parts[Index.first]
         second_r = deepcopy(r)
-        second_r.text = phrase
         third_r = deepcopy(r)
+        first_r.text = text_parts[Index.first]
+        second_r.text = phrase
         third_r.text = text_parts[Index.last]
         return [first_r, second_r, third_r]
 
