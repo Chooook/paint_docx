@@ -31,20 +31,36 @@ class DocxPainter:
             if not self.__find_phrase(p, phrase, strict=False):
                 continue
             start = 0
-            runs_to_color = self.__find_phrase_in_runs(p.runs[start:], phrase)
-            for r, phrase in runs_to_color:
-                if self.__find_phrase(r, phrase, strict=True):
-                    self.__color_r(r, color)
-                    if first_only:
-                        return
-                    continue
-                if self.__find_phrase(r, phrase, strict=False):
-                    start = [r.text for r in p.runs].index(r.text)
-                    run = self.__reshape_r_with_phrase(p, r, phrase)
-                    self.__color_r(run, color)
-                    if first_only:
-                        return
-                    continue
+            for r in self.__get_runs_to_color(
+                    p, phrase, color, start, first_only):
+                self.__color_r(r, color)
+
+    def __get_runs_to_color(self,
+                            p: Paragraph,
+                            phrase: str,
+                            color: str,
+                            start: int,
+                            first_only: bool = False
+                            ) -> list[Run]:
+        runs_with_phrase = self.__find_phrase_in_runs(p.runs[start:], phrase)
+        runs_to_color = []
+        for r, phrase in runs_with_phrase:
+            if self.__find_phrase(r, phrase, strict=True):
+                runs_to_color.append(r)
+                if first_only:
+                    return [r, ]
+                continue
+            if self.__find_phrase(r, phrase, strict=False):
+                start = [r.text for r in p.runs].index(r.text)
+                run = self.__reshape_r_with_phrase(p, r, phrase)
+                if first_only:
+                    return [run, ]
+                runs_to_color.append(run)
+                runs_after_reshape = self.__get_runs_to_color(
+                    p, phrase, color, start)
+                runs_to_color += runs_after_reshape
+                break
+        return runs_to_color
 
     @staticmethod
     def __find_phrase(el: Run or Paragraph, phrase: str,
