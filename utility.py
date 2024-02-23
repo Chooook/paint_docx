@@ -4,7 +4,7 @@ from docx.shared import RGBColor
 
 
 @dataclass
-class Color:
+class Color:  # Нет готовых реализаций на PyPi?
     # Basic:
     red     = RGBColor(255, 0, 0)
     maroon  = RGBColor(128, 0, 0)
@@ -39,6 +39,6 @@ class Color:
             return self.red
 
 
-class Index:
+class Index:  # Зачем?
     first = 0
     last = -1
