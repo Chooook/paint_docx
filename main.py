@@ -124,7 +124,7 @@ class DocxPainter:
         new_runs = self.__split_run(run, text)
         paragraph.clear()
         self.__add_runs(
-            paragraph, [runs[:run_index], new_runs, runs[run_index + 1:]])
+            paragraph, runs[:run_index] + new_runs + runs[run_index + 1:])
         return new_runs[run_with_text_after_split_index]
 
     @staticmethod
