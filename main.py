@@ -15,16 +15,6 @@ class DocxPainter:
     color = Color()
 
     @classmethod
-    def color_texts(cls,
-                    document: Document,
-                    texts: List[str],
-                    color: str = 'red',
-                    first_only: bool = False
-                    ) -> None:
-        for text in texts:
-            cls.color_text(document, text, color, first_only)
-
-    @classmethod
     def color_text(cls,
                    document: Document,
                    text: str,
