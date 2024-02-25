@@ -13,7 +13,6 @@ class DocxPainter:
 
     def __init__(self, document: Document):
         self.__document = document
-        self.color = Color()
         self.__paragraphs = self.__document.paragraphs
 
     @property
@@ -137,8 +136,9 @@ class DocxPainter:
         # append_runs ставит Run(' ') в начало, убираем
         paragraph.runs[runs_number].clear()
 
-    def __color_run(self, run: Run, color: str) -> None:
-        run.font.color.rgb = self.color[color]
+    @staticmethod
+    def __color_run(run: Run, color: str) -> None:
+        run.font.color.rgb = Color.get(color)
 
 
 if __name__ == '__main__':

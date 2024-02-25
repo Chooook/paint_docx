@@ -32,11 +32,16 @@ class Color:
     violet     = RGBColor(138, 43, 226)
     aquamarine = RGBColor(127, 255, 212)
 
-    def __getitem__(self, item: str) -> RGBColor:
+    @classmethod
+    def __getitem__(cls, item: str) -> RGBColor:
         try:
-            return getattr(self, item)
+            return getattr(cls, item)
         except AttributeError:
-            return self.red
+            return cls.red
+
+    @classmethod
+    def get(cls, item):
+        return cls.__getitem__(item)
 
 
 class Index:
