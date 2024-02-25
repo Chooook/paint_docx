@@ -1,5 +1,5 @@
 from copy import deepcopy
-from typing import List, Dict, Generator
+from typing import List, Dict, Generator, Tuple
 
 from docx import Document
 from docx.text.paragraph import Paragraph, Run
@@ -7,161 +7,152 @@ from docx.text.paragraph import Paragraph, Run
 from utility import Index, Color
 
 
-#  TODO: покраска таблиц в .docx
+#  TODO: покраска таблиц в .docx. Наследоваться от Document?
+#   Или ящик с инструментами? Попробовать взять другую либу для цветов
 class DocxPainter:
 
     def __init__(self, document: Document):
-        self.__d = document
-        self.clr = Color()
-        self.__paragraphs = [
-            el for el in self.__d.elements if isinstance(el, Paragraph)]
+        self.__document = document
+        self.color = Color()
+        self.__paragraphs = self.__document.paragraphs
 
     @property
-    def paragraphs(self) -> list[Paragraph]:
+    def paragraphs(self) -> List[Paragraph]:
         return self.__paragraphs
 
-    def color_phrases_list(self,
-                           phrases: list[str],
-                           color: str = 'red',
-                           first_only: bool = False
-                           ) -> None:
-        for phrase in phrases:
-            self.color_phrase(phrase, color, first_only)
+    def color_texts(self,
+                    texts: List[str],
+                    color: str = 'red',
+                    first_only: bool = False
+                    ) -> None:
+        for text in texts:
+            self.color_text(text, color, first_only)
 
-    def color_phrase(self,
-                     phrase: str,
-                     color: str = 'red',
-                     first_only: bool = False
-                     ) -> None:
-        phrase = phrase.strip()
-        for p in self.paragraphs:
-            if not self.__find_phrase(p, phrase, strict=False):
+    def color_text(self,
+                   text: str,
+                   color: str = 'red',
+                   first_only: bool = False
+                   ) -> None:
+        text = text.strip()
+        for paragraph in self.paragraphs:
+            if not self.__find_text(paragraph, text, strict=False):
                 continue
-            start = 0
-            for r in self.__get_runs_to_color(
-                    p, phrase, start, color, first_only):
-                self.__color_r(r, color)
+            for run in self.__get_runs_to_color(
+                    paragraph, text, first_only):
+                self.__color_run(run, color)
 
     @staticmethod
-    def __find_phrase(el: Run | Paragraph,
-                      phrase: str,
-                      strict: bool = True
-                      ) -> bool:
+    def __find_text(element: Run | Paragraph,
+                    text: str,
+                    strict: bool = True
+                    ) -> bool:
         if strict:
-            if phrase == el.text.strip():
-                return True
-        else:
-            if phrase in el.text:
-                return True
-        return False
+            return text == element.text.strip()
+        return text in element.text
 
     def __get_runs_to_color(self,
-                            p: Paragraph,
-                            phrase: str,
-                            start: int,
-                            color: str,
+                            paragraph: Paragraph,
+                            text: str,
+                            start: int = 0,
                             first_only: bool = False
-                            ) -> list[Run]:
-        runs_to_check = p.runs[start:]
-        runs_with_phrase = self.__find_phrase_in_runs(runs_to_check, phrase)
+                            ) -> List[Run]:
         runs_to_color = []
-        for r, phrase in runs_with_phrase:
-            if self.__find_phrase(r, phrase, strict=True):
-                runs_to_color.append(r)
-                if first_only:
-                    return [r, ]
-                continue
-            if self.__find_phrase(r, phrase, strict=False):
-                start = [r.text for r in p.runs].index(r.text)
-                run = self.__reshape_r_with_phrase(p, r, phrase)
-                if first_only:
-                    return [run, ]
+        for run, text in self.__find_text_in_runs(
+                paragraph.runs[start:], text):
+            if self.__find_text(run, text, strict=True):
                 runs_to_color.append(run)
-                runs_after_reshape = self.__get_runs_to_color(
-                    p, phrase, start, color)
-                runs_to_color += runs_after_reshape
+                if first_only:
+                    return runs_to_color
+                continue
+            if self.__find_text(run, text, strict=False):
+                start = [r.text for r in paragraph.runs].index(run.text)
+                runs_to_color.append(self.__reshape_run_with_text(
+                    paragraph, run, text))
+                if first_only:
+                    return runs_to_color
+                runs_to_color += self.__get_runs_to_color(
+                    paragraph, text, start)
                 break
         return runs_to_color
 
-    def __find_phrase_in_runs(self,
-                              runs: List[Run],
-                              phrase: str
-                              ) -> Generator[tuple[Run, str], None, None]:
-        symbols = list(phrase)
+    def __find_text_in_runs(self,
+                            runs: List[Run],
+                            text: str
+                            ) -> Generator[Tuple[Run, str], None, None]:
+        # TODO Отрефакторить
+        text_symbols = list(text)
         runs_combination: Dict[Run, str] = {}
-        for r in runs:
-            r_symbols = list(r.text)
-            r_contains: List[str] = []
-            for r_symbol in r_symbols:
+        for run in runs:
+            run_contains: List[str] = []
+            for run_symbol in run.text:
                 try:
-                    symbol = symbols.pop(Index.first)
-                    if r_symbol != symbol:
+                    symbol = text_symbols.pop(Index.first)
+                    if run_symbol != symbol:
                         runs_combination.clear()
-                        r_contains.clear()
-                        symbols = self.__phrase_symbols_renew(phrase)
+                        run_contains.clear()
+                        text_symbols = self.__text_symbols_renew(text)
                         continue
-                    r_contains.append(symbol)
+                    run_contains.append(symbol)
                 except IndexError:
-                    value = ''.join(r_contains)
-                    runs_combination.update({r: value})
+                    value = ''.join(run_contains)
+                    runs_combination.update({run: value})
                     if value:
-                        yield r, runs_combination[r]
+                        yield run, runs_combination[run]
                     runs_combination.clear()
-                    r_contains.clear()
-                    symbols = self.__phrase_symbols_renew(phrase)
+                    run_contains.clear()
+                    text_symbols = self.__text_symbols_renew(text)
                     continue
-            if r_contains:
-                value = ''.join(r_contains)
-                runs_combination.update({r: value})
+            if run_contains:
+                value = ''.join(run_contains)
+                runs_combination.update({run: value})
                 if value:
-                    yield r, runs_combination[r]
+                    yield run, runs_combination[run]
 
     @staticmethod
-    def __phrase_symbols_renew(phrase: str) -> list[str]:
-        return list(phrase)
+    def __text_symbols_renew(text: str) -> list[str]:
+        return list(text)
 
-    def __reshape_r_with_phrase(self,
-                                p: Paragraph,
-                                r: Run,
-                                phrase: str
+    def __reshape_run_with_text(self,
+                                paragraph: Paragraph,
+                                run: Run,
+                                text: str
                                 ) -> Run:
         # TODO попробовать выделить отсюда часть по сборке параграфа
-        r_with_phrase_after_split_index = 1
-        r_index = [r.text for r in p.runs].index(r.text)
-        runs_before_phrase = p.runs[:r_index]
-        new_runs = self.__split_r(r, phrase)
-        runs_after_phrase = p.runs[r_index + 1:]
-        r_with_phrase = new_runs[r_with_phrase_after_split_index]
-        runs = runs_before_phrase + new_runs + runs_after_phrase
-        p.clear()
-        self.__add_runs(p, runs)
-        return r_with_phrase
+        run_with_text_after_split_index = 1
+        runs = paragraph.runs
+        run_index = [r.text for r in runs].index(run.text)
+        new_runs = self.__split_run(run, text)
+        paragraph.clear()
+        self.__add_runs(
+            paragraph, [runs[:run_index], new_runs, runs[run_index + 1:]])
+        return new_runs[run_with_text_after_split_index]
 
     @staticmethod
-    def __split_r(r: Run, phrase: str) -> list[Run]:
-        text_parts = r.text.split(phrase, maxsplit=1)
-        first_r = deepcopy(r)
-        second_r = deepcopy(r)
-        third_r = deepcopy(r)
-        first_r.text = text_parts[Index.first]
-        second_r.text = phrase
-        third_r.text = text_parts[Index.last]
+    def __split_run(run: Run, text: str) -> list[Run]:
+        run_text_parts = run.text.split(text, maxsplit=1)
+        first_r = deepcopy(run)
+        second_r = deepcopy(run)
+        third_r = deepcopy(run)
+        first_r.text = run_text_parts[Index.first]
+        second_r.text = text
+        third_r.text = run_text_parts[Index.last]
         return [first_r, second_r, third_r]
 
     @staticmethod
-    def __add_runs(p: Paragraph, runs: list[Run]) -> None:
-        runs_number = len(p.runs)
-        p.append_runs(runs)
+    def __add_runs(paragraph: Paragraph, runs: list[Run]) -> None:
+        runs_number = len(paragraph.runs)
+        paragraph.append_runs(runs)
         # append_runs ставит Run(' ') в начало, убираем
-        p.runs[runs_number].clear()
+        paragraph.runs[runs_number].clear()
 
-    def __color_r(self, r: Run, color: str) -> None:
-        r.font.color.rgb = self.clr[color]
+    def __color_run(self, run: Run, color: str) -> None:
+        run.font.color.rgb = self.color[color]
 
 
 if __name__ == '__main__':
     expected = 'СЛОВО'
-    d = Document('template.docx')
-    painter = DocxPainter(d)
-    painter.color_phrase(expected, 'magenta')
-    d.save('new.docx')
+    doc = Document('template.docx')
+    painter = DocxPainter(doc)
+    painter.color_text(expected, 'magenta')
+    # неявное сохранение, пересмотреть базу класса
+    doc.save('new.docx')
