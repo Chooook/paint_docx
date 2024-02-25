@@ -1,18 +1,17 @@
-__all__ = ('color_text',)
-
 from copy import deepcopy
-from typing import List, Dict, Generator, Tuple
+from typing import Dict, Generator, List, Tuple
 
 from docx import Document
 from docx.text.paragraph import Paragraph, Run
 
-from utility import Index, Color
+from utility import Color, Index
+
+__all__ = ('color_text',)
 
 
 #  TODO: Ящик с инструментами
 #   покраска таблиц в .docx.
 #   попробовать взять другую либу для цветов
-
 def color_text(document: Document,
                text: str,
                color: str = 'red',
@@ -132,5 +131,4 @@ if __name__ == '__main__':
     expected = 'СЛОВО'
     doc = Document('template.docx')
     color_text(doc, expected, 'red')
-    # неявное сохранение, пересмотреть базу класса
     doc.save('new.docx')
