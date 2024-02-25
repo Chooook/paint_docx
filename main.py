@@ -20,14 +20,6 @@ class DocxPainter:
     def paragraphs(self) -> List[Paragraph]:
         return self.__paragraphs
 
-    def color_texts(self,
-                    texts: List[str],
-                    color: str = 'red',
-                    first_only: bool = False
-                    ) -> None:
-        for text in texts:
-            self.color_text(text, color, first_only)
-
     def color_text(self,
                    text: str,
                    color: str = 'red',
