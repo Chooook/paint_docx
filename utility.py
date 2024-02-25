@@ -1,9 +1,6 @@
-from dataclasses import dataclass
-
 from docx.shared import RGBColor
 
 
-@dataclass
 class Color:
     # Basic:
     red     = RGBColor(255, 0, 0)
