@@ -61,8 +61,9 @@ def __get_runs_to_color(paragraph: Paragraph,
 def __find_text_in_runs(runs: List[Run],
                         text: str
                         ) -> Generator[Tuple[Run, str], None, None]:
-    # FIXME красит лишнее если run заканчивается, пара букв
-    #  в него попала, но в следующем run нет продолжения
+    # FIXME красит лишнее если run заканчивается, пара букв в него попала,
+    #  но в следующем run нет продолжения. Безумно редкий случай,
+    #  скорее всего, можно создать только искусственно (см. template.docx)
     text_symbols = list(text)
     for run in runs:
         run_contains: List[str] = []
