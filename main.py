@@ -118,10 +118,3 @@ def __add_runs(paragraph: Paragraph, runs: list[Run]) -> None:
 
 def __color_run(run: Run, color: str) -> None:
     run.font.color.rgb = Color.get(color)
-
-
-if __name__ == '__main__':
-    expected = 'СЛОВО'
-    doc = Document('template.docx')
-    color_text(doc, expected, 'red')
-    doc.save('new.docx')
