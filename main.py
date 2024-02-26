@@ -107,13 +107,11 @@ def __reshape_run_with_text(paragraph: Paragraph, run: Run, text: str) -> Run:
 
 
 def __split_run(run: Run, text: str) -> list[Run]:
-    run_text_parts = run.text.split(text, maxsplit=1)
     first_r = deepcopy(run)
     second_r = deepcopy(run)
     third_r = deepcopy(run)
-    first_r.text = run_text_parts[Index.first]
+    first_r.text, third_r.text = run.text.split(text, maxsplit=1)
     second_r.text = text
-    third_r.text = run_text_parts[Index.last]
     return [first_r, second_r, third_r]
 
 
