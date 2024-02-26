@@ -41,15 +41,16 @@ def __get_runs_to_color(paragraph: Paragraph,
                         first_only: bool = False
                         ) -> List[Run]:
     runs_to_color = []
-    for run, text in __find_text_in_runs(paragraph.runs[start:], text):
-        if __find_text(run, text, strict=True):
+    for run, text_part in __find_text_in_runs(paragraph.runs[start:], text):
+        if __find_text(run, text_part, strict=True):
             runs_to_color.append(run)
             if first_only:
                 return runs_to_color
             continue
-        if __find_text(run, text, strict=False):
-            start = [r.text for r in paragraph.runs].index(run.text)
-            runs_to_color.append(__reshape_run_with_text(paragraph, run, text))
+        if __find_text(run, text_part, strict=False):
+            start = [run.text for run in paragraph.runs].index(run.text)
+            runs_to_color.append(__reshape_run_with_text(
+                paragraph, run, text_part))
             if first_only:
                 return runs_to_color
             runs_to_color += __get_runs_to_color(paragraph, text, start)
