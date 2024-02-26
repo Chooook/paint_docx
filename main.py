@@ -1,5 +1,5 @@
 from copy import deepcopy
-from typing import Dict, Generator, List, Tuple
+from typing import Generator, List, Tuple
 
 from docx import Document
 from docx.text.paragraph import Paragraph, Run
@@ -61,34 +61,27 @@ def __get_runs_to_color(paragraph: Paragraph,
 def __find_text_in_runs(runs: List[Run],
                         text: str
                         ) -> Generator[Tuple[Run, str], None, None]:
-    # TODO Отрефакторить
+    # FIXME красит лишнее если run заканчивается, пара букв
+    #  в него попала, но в следующем run нет продолжения
     text_symbols = list(text)
-    runs_combination: Dict[Run, str] = {}
     for run in runs:
         run_contains: List[str] = []
         for run_symbol in run.text:
             try:
                 symbol = text_symbols.pop(Index.first)
                 if run_symbol != symbol:
-                    runs_combination.clear()
                     run_contains.clear()
                     text_symbols = __text_symbols_renew(text)
-                    continue
-                run_contains.append(symbol)
+                else:
+                    run_contains.append(symbol)
             except IndexError:
-                value = ''.join(run_contains)
-                runs_combination.update({run: value})
-                if value:
-                    yield run, runs_combination[run]
-                runs_combination.clear()
+                if run_contains:
+                    yield run, ''.join(run_contains)
                 run_contains.clear()
                 text_symbols = __text_symbols_renew(text)
                 continue
         if run_contains:
-            value = ''.join(run_contains)
-            runs_combination.update({run: value})
-            if value:
-                yield run, runs_combination[run]
+            yield run, ''.join(run_contains)
 
 
 def __text_symbols_renew(text: str) -> list[str]:
