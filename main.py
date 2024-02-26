@@ -1,3 +1,8 @@
+"""
+Реализация маляра для .docx файлов в виде ящика с инструментами.
+(пока только одна отвёртка и та крестовая)
+"""
+
 from copy import deepcopy
 from typing import Generator, List, Tuple
 
@@ -9,14 +14,21 @@ from utility import Color, Index
 __all__ = ('color_text',)
 
 
-#  TODO: Ящик с инструментами
-#   покраска таблиц в .docx.
-#   попробовать взять другую либу для цветов
 def color_text(document: Document,
                text: str,
                color: str = 'red',
                first_only: bool = False
                ) -> None:
+    """
+    Функция для покраски частей текста в .docx
+    без изменения структуры и стилей.
+    Покраска происходит на месте, не забудьте сохранить документ в файл.
+
+    :param document: Экземпляр документа, который красим.
+    :param text: Строка текста, которую нужно покрасить.
+    :param color: Цвет (из класса Color), в который хотим покрасить.
+    :param first_only: Флаг для покраски только первого вхождения.
+    """
     text = text.strip()
     for paragraph in document.paragraphs:
         if not __find_text(paragraph, text, strict=False):
@@ -90,7 +102,6 @@ def __text_symbols_renew(text: str) -> list[str]:
 
 
 def __reshape_run_with_text(paragraph: Paragraph, run: Run, text: str) -> Run:
-    # TODO попробовать выделить отсюда часть по сборке параграфа
     run_with_text_after_split_index = 1
     runs = paragraph.runs
     run_index = [r.text for r in runs].index(run.text)
@@ -112,7 +123,7 @@ def __split_run(run: Run, text: str) -> list[Run]:
 def __add_runs(paragraph: Paragraph, runs: list[Run]) -> None:
     runs_number = len(paragraph.runs)
     paragraph.append_runs(runs)
-    # append_runs ставит Run(' ') в начало, убираем
+    # append_runs добавляет Run(' ') в начало, убираем следующей строкой
     paragraph.runs[runs_number].clear()
 
 
