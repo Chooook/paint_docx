@@ -1,10 +1,10 @@
 from copy import deepcopy
-from typing import List, Dict, Generator, Tuple
+from typing import Dict, Generator, List, Tuple
 
 from docx import Document
 from docx.text.paragraph import Paragraph, Run
 
-from utility import Index, Color
+from utility import Color, Index
 
 
 #  TODO: покраска таблиц в .docx. Наследоваться от Document?
