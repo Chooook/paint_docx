@@ -1,4 +1,9 @@
 from docx.shared import RGBColor
+from docx.text.run import Run
+
+
+def color_run(run: Run, color: str) -> None:
+    run.font.color.rgb = Color.get(color)
 
 
 class Color:
@@ -39,8 +44,3 @@ class Color:
     @classmethod
     def get(cls, item):
         return cls.__getitem__(item)
-
-
-class Index:
-    first = 0
-    last = -1
