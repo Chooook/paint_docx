@@ -1,5 +1,6 @@
 from typing import Generator, List, Tuple
 
+from docx import Document
 from docx.text.paragraph import Paragraph
 from docx.text.run import Run
 
@@ -7,11 +8,21 @@ from .change import allocate_run_with_text
 from .static import Index
 
 
+def get_paragraphs_with_text(document: Document, text: str):
+    paragraphs = []
+    for paragraph in document.paragraphs:
+        if check_text_in_element(paragraph, text, strict=False):
+            paragraphs.append(paragraph)
+    return paragraphs
+
+
 def get_runs_with_text(paragraph: Paragraph,
                        text: str,
                        first_only: bool = False,
                        start: int = 0
                        ) -> List[Run]:
+    # TODO Использует модуль change, неправильная зависимость,
+    #  подумать как изменить
     runs = []
     for run, text_part in __find_text_in_runs(paragraph.runs[start:], text):
         if check_text_in_element(run, text_part, strict=True):
