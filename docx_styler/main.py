@@ -1,7 +1,7 @@
 from docx import Document
 
 from .color import color_run
-from .search import check_text_in_element, get_runs_with_text
+from .search import get_paragraphs_with_text, get_runs_with_text
 
 
 def color_text(document: Document,
@@ -20,9 +20,7 @@ def color_text(document: Document,
     :param first_only: Флаг для покраски только первого вхождения.
     """
     text = text.strip()
-    for paragraph in document.paragraphs:
-        if not check_text_in_element(paragraph, text, strict=False):
-            continue
+    for paragraph in get_paragraphs_with_text(document, text):
         for run in get_runs_with_text(
                 paragraph, text, first_only=first_only):
             color_run(run, color)
