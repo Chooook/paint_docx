@@ -20,7 +20,7 @@ def color_text(document: Document,
     :param first_only: Флаг для покраски только первого вхождения.
     """
     text = text.strip()
-    for paragraph in get_paragraphs_with_text(document, text):
+    for paragraph in get_paragraphs_with_text(document, text, first_only):
         for run in get_runs_with_text(
                 paragraph, text, first_only=first_only):
             color_run(run, color)
