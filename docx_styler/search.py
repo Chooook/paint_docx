@@ -8,11 +8,16 @@ from .change import allocate_run_with_text
 from .static import Index
 
 
-def get_paragraphs_with_text(document: Document, text: str):
+def get_paragraphs_with_text(document: Document,
+                             text: str,
+                             first_only: bool = False
+                             ) -> List[Paragraph]:
     paragraphs = []
     for paragraph in document.paragraphs:
         if check_text_in_element(paragraph, text, strict=False):
             paragraphs.append(paragraph)
+        if first_only:
+            return paragraphs
     return paragraphs
 
 
