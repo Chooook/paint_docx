@@ -9,8 +9,8 @@ from .static import Index
 
 def get_runs_with_text(paragraph: Paragraph,
                        text: str,
-                       start: int = 0,
-                       first_only: bool = False
+                       first_only: bool = False,
+                       start: int = 0
                        ) -> List[Run]:
     runs = []
     for run, text_part in __find_text_in_runs(paragraph.runs[start:], text):
@@ -25,7 +25,7 @@ def get_runs_with_text(paragraph: Paragraph,
                 paragraph, run, text_part))
             if first_only:
                 return runs
-            runs += get_runs_with_text(paragraph, text, start)
+            runs += get_runs_with_text(paragraph, text, start=start)
             break
     return runs
 
