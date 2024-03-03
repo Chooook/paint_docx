@@ -1,8 +1,11 @@
+"""Модуль с функциями для поиска элементов объекта Document по тексту."""
+
 from typing import Generator, List, Tuple
 
-from docx import Document
 from docx.text.paragraph import Paragraph
 from docx.text.run import Run
+
+from docx import Document
 
 from .change import allocate_run_with_text
 from .static import Index
@@ -12,6 +15,15 @@ def get_paragraphs_with_text(document: Document,
                              text: str,
                              first_only: bool = False
                              ) -> List[Paragraph]:
+    """Функция для поиска объектов Paragraph содержащих text.
+
+    :param document: Объект Document, в котором осуществляется поиск.
+    :param text: Искомый текст.
+    :param first_only:
+        True - возвращается список с первым соответствующим Paragraph.
+        False - возвращается список со всеми соответствующими Paragraph.
+    :return: Список объектов Paragraph, содержащих text.
+    """
     paragraphs = []
     for paragraph in document.paragraphs:
         if check_text_in_element(paragraph, text, strict=False):
@@ -26,7 +38,17 @@ def get_runs_with_text(paragraph: Paragraph,
                        first_only: bool = False,
                        start: int = 0
                        ) -> List[Run]:
-    # TODO Использует модуль change, неправильная зависимость,
+    """Функция для поиска объектов Run, содержащих text.
+
+    :param paragraph: Paragraph, в котором осуществляется поиск.
+    :param text: Искомый текст.
+    :param first_only:
+        True - возвращается список с первым соответствующим Run.
+        False - возвращается список со всеми соответствующими Run.
+    :param start: Порядковый номер Run, с которого начинается поиск.
+    :return:  Список объектов Run, содержащих text.
+    """
+    # FIXME Использует модуль change, неправильная зависимость,
     #  подумать как изменить
     runs = []
     for run, text_part in __find_text_in_runs(paragraph.runs[start:], text):
@@ -50,6 +72,15 @@ def check_text_in_element(element: Run | Paragraph,
                           text: str,
                           strict: bool = False
                           ) -> bool:
+    """Функция для проверки объекта на содержание text.
+
+    :param element: Проверяемый элемент.
+    :param text: Искомый текст.
+    :param strict:
+        True - проверка объекта на полное вхождение text.
+        False - проверка объекта на частичное вхождение text.
+    :return: Bool, означающий, содержит объект text или нет.
+    """
     if strict:
         return text == element.text.strip()
     return text in element.text

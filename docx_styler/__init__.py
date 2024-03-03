@@ -1,5 +1,5 @@
-"""
-Реализация стайлера для .docx файлов в виде ящика с инструментами.
+"""Реализация стайлера для .docx файлов в виде ящика с инструментами.
+
 (пока только одна отвёртка и та шлицевая)
 TODO:
     * Покраска в таблицах
@@ -12,8 +12,7 @@ TODO:
 from .change import add_runs, allocate_run_with_text
 from .color import color_run
 from .main import color_text
-from .search import (check_text_in_element,
-                     get_paragraphs_with_text,
+from .search import (check_text_in_element, get_paragraphs_with_text,
                      get_runs_with_text)
 
 __all__ = (
