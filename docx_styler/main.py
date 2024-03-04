@@ -2,8 +2,8 @@
 
 from docx import Document
 
-from .color import color_run
-from .search import get_paragraphs_with_text, get_runs_with_text
+from .core.color import color_run
+from .core.search import get_paragraphs_with_text, get_runs_with_text
 
 
 def color_text(document: Document,

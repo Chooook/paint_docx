@@ -7,7 +7,7 @@ from docx.text.run import Run
 
 from docx import Document
 
-from .change import allocate_run_with_text
+from .structure import allocate_run_with_text
 from .static import Index
 
 
