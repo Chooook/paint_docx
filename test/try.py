@@ -7,8 +7,10 @@ if __name__ == '__main__':
     doc = Document('test/template.docx')
 
     docx_styler.color_text(doc, expected, 'red')
-    p = docx_styler.get_paragraphs_with_text(doc, expected, first_only=True)[0]
-    r = docx_styler.get_runs_with_text(p, expected, first_only=True)[0]
+    # p = docx_styler.get_paragraphs_with_text(
+    #     doc, expected, first_only=True)[0]
+    # r = docx_styler.get_runs_with_text(
+    #     p, expected, first_only=True)[0]
 
     # # Комментарий к run
     # r.add_comment('Комментарий', author='Полное имя', initials='Инициалы')
