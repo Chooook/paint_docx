@@ -15,7 +15,7 @@ def get_paragraphs_with_text(document: Document,
                              text: str,
                              first_only: bool = False
                              ) -> List[Paragraph]:
-    """Функция для поиска объектов Paragraph содержащих text.
+    """Функция для поиска объектов Paragraph, содержащих text.
 
     :param document: Объект Document, в котором осуществляется поиск.
     :param text: Искомый текст.

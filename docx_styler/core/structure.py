@@ -29,7 +29,7 @@ def allocate_run_with_text(paragraph: Paragraph, run: Run, text: str) -> Run:
 
 
 def add_runs(paragraph: Paragraph, runs: list[Run]) -> None:
-    """Функция для добавления списка Run`ов в параграф.
+    """Функция для добавления списка Run`ов в Paragraph.
 
     Исходный метод append_runs добавляет Run с пробелом в начало, эта
     функция очищает Run с пробелом для сохранения структуры параграфа.
