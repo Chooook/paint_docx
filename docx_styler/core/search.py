@@ -48,7 +48,7 @@ def get_runs_with_text(paragraph: Paragraph,
     :param start: Порядковый номер Run, с которого начинается поиск.
     :return:  Список объектов Run, содержащих text.
     """
-    # FIXME Использует модуль change, неправильная зависимость,
+    # TODO Использует модуль change, неправильная зависимость,
     #  подумать как изменить
     runs = []
     for run, text_part in __find_text_in_runs(paragraph.runs[start:], text):
@@ -58,7 +58,7 @@ def get_runs_with_text(paragraph: Paragraph,
                 return runs
             continue
         if check_text_in_element(run, text_part, strict=False):
-            start = [run.text for run in paragraph.runs].index(run.text)
+            start = [run.text for run in paragraph.runs].index(run.text)+3
             runs.append(allocate_run_with_text(
                 paragraph, run, text_part))
             if first_only:
@@ -92,6 +92,7 @@ def __find_text_in_runs(runs: List[Run],
     # FIXME красит лишнее если run заканчивается, пара букв в него попала,
     #  но в следующем run нет продолжения. Безумно редкий случай,
     #  скорее всего, можно создать только искусственно (см. template.docx)
+    #  решение в заметке в модуле main
     text_symbols = list(text)
     for run in runs:
         run_contains: List[str] = []
