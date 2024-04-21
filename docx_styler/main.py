@@ -11,11 +11,6 @@ from .core import (
     get_runs_with_text
 )
 
-# TODO передавать на покраску список ранов, но проверять сумму их текстов на
-#  соответствие полному тексту, чтобы неполный текст не красился.
-#  Вид списка на покраску: [[Run, Run, Run], [Run], [Run], [Run, Run]...]
-#  Реализация должна быть в модуле поиска (search).
-
 
 def color_text(document: Document,
                text: str,
@@ -62,7 +57,8 @@ def __get_runs_with_text_from_document(document: Document,
     text = text.strip()
     runs = []
     for paragraph in get_paragraphs_with_text(document, text, first_only):
-        for run in get_runs_with_text(
+        for runs_list in get_runs_with_text(
                 paragraph, text, first_only=first_only):
-            runs.append(run)
+            for run in runs_list:
+                runs.append(run)
     return runs

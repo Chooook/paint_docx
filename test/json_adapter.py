@@ -13,7 +13,7 @@ if __name__ == '__main__':
                 {'Text': 'Тест со словами', 'Color': 'purple'},
                 {'Text': 'после', 'Color': 'darkblue'},
                 {'Text': 'Дальше должен идти', 'Color': 'darkyellow'},
-                {'Text': 'ййй', 'Color': 'gray'},
+                {'Text': 'ййй', 'Color': 'gray'},  # плохо красит
                 {'Text': 'Тест со словами до', 'Color': 'gray'},
             ],
             'OutputPath': 'same path'
