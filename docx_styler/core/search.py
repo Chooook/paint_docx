@@ -36,8 +36,7 @@ def get_paragraphs_with_text(document: Document,
 def get_runs_with_text(paragraph: Paragraph,
                        text: str,
                        first_only: bool = False,
-                       start: int = 0
-                       ) -> List[Run]:
+                       ) -> List[List[Run]]:
     """Функция для поиска объектов Run, содержащих text.
 
     :param paragraph: Paragraph, в котором осуществляется поиск.
@@ -45,26 +44,40 @@ def get_runs_with_text(paragraph: Paragraph,
     :param first_only:
         True - возвращается список с первым соответствующим Run.
         False - возвращается список со всеми соответствующими Run.
-    :param start: Порядковый номер Run, с которого начинается поиск.
     :return:  Список объектов Run, содержащих text.
     """
     # TODO Использует модуль change, неправильная зависимость,
     #  подумать как изменить
     runs = []
-    for run, text_part in __find_text_in_runs(paragraph.runs[start:], text):
-        if check_text_in_element(run, text_part, strict=True):
-            runs.append(run)
+    possible_runs = list(__find_text_in_runs(paragraph.runs, text))
+    for i, possible_run in enumerate(possible_runs):
+        run, text_part = possible_run
+        if check_text_in_element(run, text, strict=True):
+            runs.append([run])
             if first_only:
                 return runs
-            continue
-        if check_text_in_element(run, text_part, strict=False):
-            start = [run.text for run in paragraph.runs].index(run.text)+3
-            runs.append(allocate_run_with_text(
-                paragraph, run, text_part))
-            if first_only:
-                return runs
-            runs += get_runs_with_text(paragraph, text, start=start)
-            break
+        else:
+            temp_runs = []
+            temp_text = []
+            for temp_possible_run in possible_runs[i:]:
+                temp_run, temp_text_part = temp_possible_run
+                if check_text_in_element(
+                        temp_run, temp_text_part, strict=True):
+                    temp_runs.append(temp_run)
+                    temp_text.append(temp_text_part)
+                else:
+                    temp_runs.append(allocate_run_with_text(
+                        paragraph, temp_run, temp_text_part))
+                    temp_text.append(temp_text_part)
+                if ''.join(temp_text).strip() == text:
+                    runs.append(temp_runs)
+                    if first_only:
+                        return runs
+                    break
+                elif ''.join(temp_text) in text:
+                    continue
+                else:
+                    break
     return runs
 
 
@@ -114,5 +127,5 @@ def __find_text_in_runs(runs: List[Run],
             yield run, ''.join(run_contains)
 
 
-def __text_symbols_renew(text: str) -> list[str]:
+def __text_symbols_renew(text: str) -> List[str]:
     return list(text)
