@@ -46,6 +46,24 @@ def get_paragraphs_with_text(document: Document,
     return paragraphs
 
 
+def check_text_in_element(element: Run | Paragraph,
+                          text: str,
+                          strict: bool = False
+                          ) -> bool:
+    """Функция для проверки объекта на содержание text.
+
+    :param element: Проверяемый элемент.
+    :param text: Искомый текст.
+    :param strict:
+        True - проверка объекта на полное вхождение text.
+        False - проверка объекта на частичное вхождение text.
+    :return: Bool, означающий, содержит объект text или нет.
+    """
+    if strict:
+        return text == element.text.strip()
+    return text in element.text
+
+
 def get_runs_with_text(paragraph: Paragraph,
                        text: str,
                        first_only: bool = False,
@@ -94,24 +112,6 @@ def get_runs_with_text(paragraph: Paragraph,
     return runs
 
 
-def check_text_in_element(element: Run | Paragraph,
-                          text: str,
-                          strict: bool = False
-                          ) -> bool:
-    """Функция для проверки объекта на содержание text.
-
-    :param element: Проверяемый элемент.
-    :param text: Искомый текст.
-    :param strict:
-        True - проверка объекта на полное вхождение text.
-        False - проверка объекта на частичное вхождение text.
-    :return: Bool, означающий, содержит объект text или нет.
-    """
-    if strict:
-        return text == element.text.strip()
-    return text in element.text
-
-
 def __find_text_in_runs(runs: List[Run],
                         text: str
                         ) -> Generator[Tuple[Run, str], None, None]:
@@ -119,6 +119,7 @@ def __find_text_in_runs(runs: List[Run],
     #  но в следующем run нет продолжения. Безумно редкий случай,
     #  скорее всего, можно создать только искусственно (см. template.docx)
     #  решение в заметке в модуле main
+
     text_symbols = list(text)
     for run in runs:
         run_contains: List[str] = []
@@ -127,18 +128,14 @@ def __find_text_in_runs(runs: List[Run],
                 symbol = text_symbols.pop(Index.first)
                 if run_symbol != symbol:
                     run_contains.clear()
-                    text_symbols = __text_symbols_renew(text)
+                    text_symbols = list(text)
                 else:
                     run_contains.append(symbol)
             except IndexError:
                 if run_contains:
                     yield run, ''.join(run_contains)
                 run_contains.clear()
-                text_symbols = __text_symbols_renew(text)
+                text_symbols = list(text)
                 continue
         if run_contains:
             yield run, ''.join(run_contains)
-
-
-def __text_symbols_renew(text: str) -> List[str]:
-    return list(text)
