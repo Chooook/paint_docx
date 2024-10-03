@@ -1,13 +1,13 @@
 """Пакет с низкоуровневыми функциями для работы с объектом Document."""
-from .structure import allocate_run_with_text
-from .color import color_run, fill_run_with_color
+from .extensions import SpecifiedTextHighlight, TextHighlight
+from .color import Color
 from .search import (check_text_in_element, get_paragraphs_with_text,
                      get_runs_with_text)
-from extensions import TextHighlight, SpecifiedTextHighlight
+from .structure import allocate_run_with_text
 
 __all__ = (
-    'allocate_run_with_text',
-    'color_run', 'fill_run_with_color',
+    'TextHighlight', 'SpecifiedTextHighlight',
+    'Color',
     'check_text_in_element', 'get_paragraphs_with_text', 'get_runs_with_text',
-    'TextHighlight', 'SpecifiedTextHighlight'
+    'allocate_run_with_text',
 )

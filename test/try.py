@@ -7,8 +7,8 @@ if __name__ == '__main__':
     expected = 'СЛОВО'
     doc = Document('test/template.docx')
 
-    docx_styler.color_text(doc, expected, color='red')
-    docx_styler.fill_text_with_color(doc, expected, color='darkgreen')
+    docx_styler.color_text(doc, expected, color='darkred')
+    docx_styler.highlight_text(doc, expected, color='green')
     # p = docx_styler.get_paragraphs_with_text(
     #     doc, expected, first_only=True)[0]
     # r = docx_styler.get_runs_with_text(
