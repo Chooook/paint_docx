@@ -3,7 +3,7 @@ from typing import Iterable
 
 
 @dataclass(frozen=True)
-class TextHighlight:
+class TextToHighlight:
     """
     Класс TextHighlight предназначен для управления и валидации строк,
     которые необходимо выделить в заданном тексте.
@@ -58,7 +58,7 @@ class TextHighlight:
 
 
 @dataclass(frozen=True)
-class SpecifiedTextHighlight(TextHighlight):
+class SpecifiedTextToHighlight(TextToHighlight):
     """
     Класс SpecifiedTextHighlight предназначен для управления и валидации строк,
     которые необходимо выделить в заданном тексте.

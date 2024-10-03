@@ -21,7 +21,7 @@ from docx.text.run import Run
 from docx import Document
 
 from .structure import allocate_run_with_text
-from .static import Index
+from .utils import FIRST
 
 
 def get_paragraphs_with_text(document: Document,
@@ -125,7 +125,7 @@ def __find_text_in_runs(runs: List[Run],
         run_contains: List[str] = []
         for run_symbol in run.text:
             try:
-                symbol = text_symbols.pop(Index.first)
+                symbol = text_symbols.pop(FIRST)
                 if run_symbol != symbol:
                     run_contains.clear()
                     text_symbols = list(text)

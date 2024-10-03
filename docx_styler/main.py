@@ -54,10 +54,10 @@ def __get_runs_with_text_from_document(document: Document,
                                        first_only: bool
                                        ) -> List[Run]:
     text = text.strip()
-    runs = []
+    runs_to_color = []
     for paragraph in get_paragraphs_with_text(document, text, first_only):
         for runs_list in get_runs_with_text(
                 paragraph, text, first_only=first_only):
             for run in runs_list:
-                runs.append(run)
-    return runs
+                runs_to_color.append(run)
+    return runs_to_color
