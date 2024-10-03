@@ -6,7 +6,7 @@ from typing import Tuple
 from docx.text.paragraph import Paragraph
 from docx.text.run import Run
 
-from .static import Index
+from .utils import FIRST
 
 
 def allocate_run_with_text(paragraph: Paragraph, run: Run, text: str) -> Run:
@@ -33,7 +33,7 @@ def allocate_run_with_text(paragraph: Paragraph, run: Run, text: str) -> Run:
     new_runs, run_with_text = __split_run(run, text)
     paragraph.clear()
     paragraph.append_runs(runs[:run_index] + new_runs + runs[run_index + 1:])
-    paragraph.runs[Index.first].clear()
+    paragraph.runs[FIRST].clear()
     # TODO: Реализовать возможность сохранять копию run`а
     #  вместо изменения на месте
     return run_with_text
