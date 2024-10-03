@@ -5,8 +5,7 @@ from docx import Document
 from docx.text.run import Run
 
 from .core import (
-    color_run,
-    fill_run_with_color,
+    Color,
     get_paragraphs_with_text,
     get_runs_with_text
 )
@@ -28,14 +27,14 @@ def color_text(document: Document,
     :param first_only: Флаг для покраски только первого вхождения.
     """
     for run in __get_runs_with_text_from_document(document, text, first_only):
-        color_run(run, color)
+        Color.color_run(run, color)
 
 
-def fill_text_with_color(document: Document,
-                         text: str,
-                         first_only: bool = False,
-                         color: str = 'red'
-                         ) -> None:
+def highlight_text(document: Document,
+                   text: str,
+                   first_only: bool = False,
+                   color: str = 'red'
+                   ) -> None:
     """Функция для покраски частей текста в .docx.
 
     Не изменяет структуры и стилей.
@@ -47,7 +46,7 @@ def fill_text_with_color(document: Document,
     :param first_only: Флаг для покраски только первого вхождения.
     """
     for run in __get_runs_with_text_from_document(document, text, first_only):
-        fill_run_with_color(run, color)
+        Color.highlight_run(run, color)
 
 
 def __get_runs_with_text_from_document(document: Document,
