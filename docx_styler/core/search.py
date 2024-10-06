@@ -77,7 +77,7 @@ def get_runs_with_text(paragraph: Paragraph,
         False - возвращается список со всеми соответствующими Run.
     :return:  Список объектов Run, содержащих text.
     """
-    # TODO Использует модуль change, неправильная зависимость,
+    # TODO Использует модуль structure, неправильная зависимость,
     #  подумать как изменить
     runs = []
     possible_runs = list(__find_text_in_runs(paragraph.runs, text))
