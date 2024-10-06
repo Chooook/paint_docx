@@ -1,11 +1,11 @@
 """Модуль с функциями для изменения элементов объекта Document."""
-from typing import List
+from typing import List, Tuple
 
 from docx import Document
 from docx.text.run import Run
 
 from .core import (
-    Color,
+    color_run, highlight_run,
     get_paragraphs_with_text,
     get_runs_with_text
 )
@@ -13,8 +13,8 @@ from .core import (
 
 def color_text(document: Document,
                text: str,
+               color: str | Tuple[int, int, int],
                first_only: bool = False,
-               color: str = 'red'
                ) -> None:
     """Функция для покраски частей текста в .docx.
 
@@ -27,13 +27,13 @@ def color_text(document: Document,
     :param first_only: Флаг для покраски только первого вхождения.
     """
     for run in __get_runs_with_text_from_document(document, text, first_only):
-        Color.color_run(run, color)
+        color_run(run, color)
 
 
 def highlight_text(document: Document,
                    text: str,
+                   color: str | Tuple[int, int, int],
                    first_only: bool = False,
-                   color: str = 'red'
                    ) -> None:
     """Функция для покраски частей текста в .docx.
 
@@ -46,7 +46,7 @@ def highlight_text(document: Document,
     :param first_only: Флаг для покраски только первого вхождения.
     """
     for run in __get_runs_with_text_from_document(document, text, first_only):
-        Color.highlight_run(run, color)
+        highlight_run(run, color)
 
 
 def __get_runs_with_text_from_document(document: Document,
