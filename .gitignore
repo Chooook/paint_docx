@@ -5,4 +5,5 @@ venv/
 .idea/
 .mypy_cache/
 
-new.docx
+*.docx
+!test/template.docx
