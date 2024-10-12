@@ -1,4 +1,4 @@
-"""Модуль с функциями, для изменения структуры объекта Document."""
+"""Модуль с функциями, для изменения структуры параграфов объекта Document."""
 
 from copy import deepcopy
 from typing import Tuple
@@ -10,14 +10,14 @@ from .utils import FIRST
 
 
 def allocate_run_with_text(paragraph: Paragraph, run: Run, text: str) -> Run:
-    """Функция для выделения объекта run, содержащего необходимый текст.
+    """Выделяет объект Run, содержащий необходимый текст.
 
-    Разделяет исходный run на 3 run`а для отделения run`а с текстом.
+    Разделяет исходный Run на 3 Run`а для отделения Run`а с текстом.
     Перезаписывает весь параграф.
     Метод paragraph.append_runs добавляет Run с пробелом в начало,
     эта функция очищает Run с пробелом для сохранения структуры параграфа.
-    После разделения все три run`а сохраняют стиль исходного.
-    Изменяет исходный объект Document.
+    После разделения все три Run`а сохраняют стиль исходного.
+    Неявно изменяет исходный объект Document.
 
     :param paragraph: Paragraph, содержащий необходимый Run.
     :param run: Run, который необходимо разделить.
@@ -33,13 +33,18 @@ def allocate_run_with_text(paragraph: Paragraph, run: Run, text: str) -> Run:
     new_runs, run_with_text = __split_run(run, text)
     paragraph.clear()
     paragraph.append_runs(runs[:run_index] + new_runs + runs[run_index + 1:])
+    # Очистка побочного Run`а с пробелом для сохранения текста параграфа
     paragraph.runs[FIRST].clear()
-    # TODO: Реализовать возможность сохранять копию run`а
-    #  вместо изменения на месте
     return run_with_text
 
 
 def __split_run(run: Run, text: str) -> Tuple[list[Run], Run]:
+    """Разделяет исходный Run на 3 Run`а для отделения Run`а с текстом.
+
+    :param run: Исходный Run.
+    :param text: Текст, который необходимо выделить в отдельный Run.
+    :return: Набор объектов Run, в совокупности равные исходному Run.
+    """
     first_r = deepcopy(run)
     second_r = deepcopy(run)
     third_r = run

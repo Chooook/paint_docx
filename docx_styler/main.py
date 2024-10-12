@@ -1,13 +1,14 @@
-"""Модуль с функциями для изменения элементов объекта Document."""
-from typing import List, Tuple
+"""Модуль с внешними функциями для покраски Run в объекте Document."""
+
+# TODO: Реализовать возможность работы с копией документа
+#  вместо изменения на месте (нужно ли это?)
+from typing import Tuple
 
 from docx import Document
-from docx.text.run import Run
 
 from .core import (
     color_run, highlight_run,
-    get_paragraphs_with_text,
-    get_runs_with_text
+    get_runs_with_text_from_document
 )
 
 
@@ -26,13 +27,13 @@ def color_text(document: Document,
     :param color: Цвет (из класса Color), в который хотим покрасить.
     :param first_only: Флаг для покраски только первого вхождения.
     """
-    for run in __get_runs_with_text_from_document(document, text, first_only):
+    for run in get_runs_with_text_from_document(document, text, first_only):
         color_run(run, color)
 
 
 def highlight_text(document: Document,
                    text: str,
-                   color: str | Tuple[int, int, int],
+                   color: str,
                    first_only: bool = False,
                    ) -> None:
     """Функция для покраски частей текста в .docx.
@@ -45,19 +46,5 @@ def highlight_text(document: Document,
     :param color: Цвет (из класса Color), в который хотим покрасить.
     :param first_only: Флаг для покраски только первого вхождения.
     """
-    for run in __get_runs_with_text_from_document(document, text, first_only):
+    for run in get_runs_with_text_from_document(document, text, first_only):
         highlight_run(run, color)
-
-
-def __get_runs_with_text_from_document(document: Document,
-                                       text: str,
-                                       first_only: bool
-                                       ) -> List[Run]:
-    text = text.strip()
-    runs_to_color = []
-    for paragraph in get_paragraphs_with_text(document, text, first_only):
-        for runs_list in get_runs_with_text(
-                paragraph, text, first_only=first_only):
-            for run in runs_list:
-                runs_to_color.append(run)
-    return runs_to_color
