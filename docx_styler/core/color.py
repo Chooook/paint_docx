@@ -1,4 +1,4 @@
-"""Модуль с функциями для покраски элементов объекта Document (Run)."""
+"""Модуль с функциями для покраски Run в объекте Document."""
 import warnings
 from functools import singledispatch
 from types import MappingProxyType
@@ -17,7 +17,7 @@ DEFAULT_HIGHLIGHT_COLOR = 'yellow'
 
 
 def color_run(run: Run, color: str | Tuple[int, int, int] = '') -> None:
-    """Функция для изменения цвета текста объекта Run.
+    """Изменяет цвет текста объекта Run.
 
     :param run: Run, который нужно покрасить.
     :param color: Цвет, в который нужно покрасить.
@@ -26,7 +26,7 @@ def color_run(run: Run, color: str | Tuple[int, int, int] = '') -> None:
 
 
 def highlight_run(run: Run, color: str = '') -> None:
-    """Функция для изменения цвета заливки текста объекта Run.
+    """Изменяет цвет заливки текста объекта Run.
 
     :param run: Run, который нужно выделить.
     :param color: Цвет, в который нужно выделить.
@@ -35,33 +35,41 @@ def highlight_run(run: Run, color: str = '') -> None:
 
 
 @singledispatch
-def __get_rgb_color(color_name) -> RGBColor:
-    """Получает объект RGBColor для покраски текста объекта Run."""
+def __get_rgb_color(color) -> RGBColor:
+    """Получает объект RGBColor для покраски текста объекта Run.
+
+    :param color: Наименование цвета или кортеж параметров RGB.
+    :return: Объект RGBColor.
+    """
     raise NotImplementedError(
-        f"Неподдерживаемый тип аргумента: {type(color_name)}")
+        f"Неподдерживаемый тип аргумента: {type(color)}")
 
 
 @__get_rgb_color.register
-def _(color_name: str) -> RGBColor:
-    """
-    Перегрузка функции __get_rgb_color.
+def _(color: str) -> RGBColor:
+    """Перегрузка функции __get_rgb_color.
     Извлекает RGBColor объект по наименованию цвета из словаря.
+
+    :param color: Наименование цвета.
+    :return: Объект RGBColor, соответствующий наименованию цвета.
     """
     try:
-        return RGB_COLORS[color_name]
+        return RGB_COLORS[color]
     except KeyError:
         # TODO: Выводить варнинг если имя не найдено при его наличии (не '')
         return RGB_COLORS[DEFAULT_RGB_COLOR]
 
 
 @__get_rgb_color.register
-def _(color_name: tuple) -> RGBColor:
-    """
-    Перегрузка функции __get_rgb_color.
-    Генерирует RGBColor объект по параметрам RGB.
+def _(color: tuple) -> RGBColor:
+    """Перегрузка функции __get_rgb_color.
+    Создаёт объект RGBColor по параметрам RGB.
+
+    :param color: Кортеж параметров RGB, например: (255, 0, 0).
+    :return: Объект RGBColor, соответствующий параметрам RGB.
     """
     try:
-        return RGBColor(*color_name)
+        return RGBColor(*color)
     except TypeError:
         warnings.warn(
             'Параметров цвета должно быть 3! '
@@ -81,7 +89,11 @@ def _(color_name: tuple) -> RGBColor:
 
 
 def __get_highlight_color(color_name: str) -> HighlightColor:
-    """Функция для извлечения HighlightColor цвета по его наименованию."""
+    """Извлекает объект цвета HighlightColor по его наименованию.
+
+    :param color_name: Наименование цвета.
+    :return: Объект HighlightColor, соответствующий наименованию цвета.
+    """
     try:
         return HIGHLIGHT_COLORS_DOCX[color_name]
     except KeyError:

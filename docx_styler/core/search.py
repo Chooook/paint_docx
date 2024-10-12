@@ -7,7 +7,7 @@
 #  В этом случае необходимо найти весь переданный текст
 #  и уже в нём искать слова, которые нужно покрасить.
 #  Необходимо также продумать структуру данных, соответствующую этой концепции
-#  и сохранить обратную совместимость с текущей реализацией.
+#  и сохранить обратную совместимость с текущей реализацией (extensions.py).
 #  Для этого нужно выделить все run, соответствующие тексту и искать по ним.
 #  Можно создать перегрузку только входной функции, так как дальше она
 #  будет передавать работу в другие функции, в другие функции можно
@@ -24,11 +24,32 @@ from .structure import allocate_run_with_text
 from .utils import FIRST
 
 
+def get_runs_with_text_from_document(document: Document,
+                                     text: str,
+                                     first_only: bool
+                                     ) -> List[Run]:
+    """Функция для получения списка объектов Run с текстом.
+
+    :param document: Экземпляр документа, в котором ищем.
+    :param text: Искомый текст.
+    :param first_only: Флаг для поиска только первого вхождения.
+    :return:
+    """
+    text = text.strip()
+    runs_to_color = []
+    for paragraph in get_paragraphs_with_text(document, text, first_only):
+        for runs_list in get_runs_with_text_from_paragraph(
+                paragraph, text, first_only=first_only):
+            for run in runs_list:
+                runs_to_color.append(run)
+    return runs_to_color
+
+
 def get_paragraphs_with_text(document: Document,
                              text: str,
                              first_only: bool = False
                              ) -> List[Paragraph]:
-    """Функция для поиска объектов Paragraph, содержащих text.
+    """Ищет объекты Paragraph, содержащие text.
 
     :param document: Объект Document, в котором осуществляется поиск.
     :param text: Искомый текст.
@@ -50,7 +71,7 @@ def check_text_in_element(element: Run | Paragraph,
                           text: str,
                           strict: bool = False
                           ) -> bool:
-    """Функция для проверки объекта на содержание text.
+    """Проверяет объект на содержание text.
 
     :param element: Проверяемый элемент.
     :param text: Искомый текст.
@@ -64,24 +85,24 @@ def check_text_in_element(element: Run | Paragraph,
     return text in element.text
 
 
-def get_runs_with_text(paragraph: Paragraph,
-                       text: str,
-                       first_only: bool = False,
-                       ) -> List[List[Run]]:
-    """Функция для поиска объектов Run, содержащих text.
+def get_runs_with_text_from_paragraph(paragraph: Paragraph,
+                                      text: str,
+                                      first_only: bool = False,
+                                      ) -> List[List[Run]]:
+    """Извлекает наборы объектов Run, которые в совокупности содержат text.
 
     :param paragraph: Paragraph, в котором осуществляется поиск.
     :param text: Искомый текст.
     :param first_only:
         True - возвращается список с первым соответствующим Run.
         False - возвращается список со всеми соответствующими Run.
-    :return:  Список объектов Run, содержащих text.
+    :return: Список наборов объектов Run, содержащих text.
     """
-    # TODO Использует модуль structure, неправильная зависимость,
-    #  подумать как изменить
+    # TODO Использует модуль structure (allocate_run_with_text),
+    #  неправильная зависимость, подумать как изменить
     runs = []
     possible_runs = list(__find_text_in_runs(paragraph.runs, text))
-    for i, possible_run in enumerate(possible_runs):
+    for run_index, possible_run in enumerate(possible_runs):
         run, text_part = possible_run
         if check_text_in_element(run, text, strict=True):
             runs.append([run])
@@ -90,7 +111,7 @@ def get_runs_with_text(paragraph: Paragraph,
         else:
             temp_runs = []
             temp_text = []
-            for temp_possible_run in possible_runs[i:]:
+            for temp_possible_run in possible_runs[run_index:]:
                 temp_run, temp_text_part = temp_possible_run
                 if check_text_in_element(
                         temp_run, temp_text_part, strict=True):
@@ -115,11 +136,13 @@ def get_runs_with_text(paragraph: Paragraph,
 def __find_text_in_runs(runs: List[Run],
                         text: str
                         ) -> Generator[Tuple[Run, str], None, None]:
-    # FIXME красит лишнее если run заканчивается, пара букв в него попала,
-    #  но в следующем run нет продолжения. Безумно редкий случай,
-    #  скорее всего, можно создать только искусственно (см. template.docx)
-    #  решение в заметке в модуле main
+    """Итеративно ищет объекты Run, которые содержат text или его часть.
 
+    :param runs: Список объектов Run, по которым осуществляется поиск.
+    :param text: Текст, по которому осуществляется поиск.
+    :return: Кортеж с объектом Run, содержащим text или его часть
+        и часть текста, которая была найдена.
+    """
     text_symbols = list(text)
     for run in runs:
         run_contains: List[str] = []
