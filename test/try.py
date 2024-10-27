@@ -23,7 +23,6 @@ if __name__ == '__main__':
     #     doc, expected, first_only=True)[0]
     # r = docx_styler.get_runs_with_text(
     #     p, expected, first_only=True)[0]
-    # r.font.highlight_color = 1
     # # Комментарий к run
     # r.add_comment('Комментарий', author='Полное имя', initials='Инициалы')
     # # run.add_comment ломает документ по какой-то причине
