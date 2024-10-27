@@ -1,7 +1,7 @@
 """Модуль с функциями, для изменения структуры параграфов объекта Document."""
 
 from copy import deepcopy
-from typing import Tuple
+from typing import List, Tuple
 
 from docx.text.paragraph import Paragraph
 from docx.text.run import Run
@@ -30,7 +30,8 @@ def allocate_run_with_text(paragraph: Paragraph, run: Run, text: str) -> Run:
     except ValueError:
         # FIXME возможно неправильное определение индекса в случае идентичных
         run_index = [r.text for r in runs].index(text)
-    new_runs, run_with_text = __split_run(run, text)
+    new_runs = __split_run(run, text)
+    run_with_text = new_runs[1]  # Run с нужным текстом второй, см. __split_run
     paragraph.clear()
     paragraph.append_runs(runs[:run_index] + new_runs + runs[run_index + 1:])
     # Очистка побочного Run`а с пробелом для сохранения текста параграфа
@@ -38,7 +39,7 @@ def allocate_run_with_text(paragraph: Paragraph, run: Run, text: str) -> Run:
     return run_with_text
 
 
-def __split_run(run: Run, text: str) -> Tuple[list[Run], Run]:
+def __split_run(run: Run, text: str) -> List[Run]:
     """Разделяет исходный Run на 3 Run`а для отделения Run`а с текстом.
 
     :param run: Исходный Run.
@@ -50,4 +51,4 @@ def __split_run(run: Run, text: str) -> Tuple[list[Run], Run]:
     third_r = run
     first_r.text, third_r.text = run.text.split(text, maxsplit=1)
     second_r.text = text
-    return [first_r, second_r, third_r], second_r
+    return [first_r, second_r, third_r]
