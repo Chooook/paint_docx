@@ -1,9 +1,11 @@
 __pycache__
 
-venv/
+venv
 
-.idea/
-.mypy_cache/
+.idea
+.mypy_cache
+.pytest_cache
+.coverage
 
 *.docx
 !test/template.docx
