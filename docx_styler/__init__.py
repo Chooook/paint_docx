@@ -7,16 +7,10 @@ TODO:
     * Расширенная работа со стилями (шрифт, размер, написание, ...)
 """
 
-from .core import color_run, highlight_run
-from .core import (check_text_in_element, get_paragraphs_with_text,
-                   get_runs_with_text_from_paragraph,
-                   get_runs_with_text_from_document)
+from .core import RunCollector, RunFinder, color_run, highlight_run
 from .main import color_text, highlight_text
 
 __all__ = (
-    'color_run', 'highlight_run',
-    'check_text_in_element', 'get_paragraphs_with_text',
-    'get_runs_with_text_from_paragraph',
-    'get_runs_with_text_from_document',
+    'RunCollector', 'RunFinder', 'color_run', 'highlight_run',
     'color_text', 'highlight_text',
 )
