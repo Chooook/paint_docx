@@ -12,6 +12,9 @@
 #  Можно создать перегрузку только входной функции, так как дальше она
 #  будет передавать работу в другие функции, в другие функции можно
 #  просто добавить необязательный параметр. (?)
+# TODO: на данный момент не учитывается что фраза может быть в нескольких
+#  параграфах, а это нужно как минимум для реализации поиска по таблицам.
+# TODO: реализовать поиск по таблицам
 from copy import deepcopy
 from typing import Generator, List, Tuple
 
@@ -66,24 +69,6 @@ def get_paragraphs_with_text(document: Document,
     return paragraphs
 
 
-def check_text_in_element(element: Run | Paragraph,
-                          text: str,
-                          strict: bool = False
-                          ) -> bool:
-    """Проверяет объект на содержание text.
-
-    :param element: Проверяемый элемент.
-    :param text: Искомый текст.
-    :param strict:
-        True - проверка объекта на полное вхождение text.
-        False - проверка объекта на частичное вхождение text.
-    :return: Bool, означающий, содержит объект text или нет.
-    """
-    if strict:
-        return text == element.text.strip()
-    return text in element.text
-
-
 def get_runs_with_text_from_paragraph(paragraph: Paragraph,
                                       text: str,
                                       first_only: bool = False,
@@ -97,8 +82,6 @@ def get_runs_with_text_from_paragraph(paragraph: Paragraph,
         False - возвращается список со всеми соответствующими Run.
     :return: Список наборов объектов Run, содержащих text.
     """
-    # TODO Использует модуль structure (allocate_run_with_text),
-    #  неправильная зависимость, подумать как изменить
     runs = []
     possible_runs = list(__find_text_in_runs(paragraph.runs, text))
     for run_index, possible_run in enumerate(possible_runs):
@@ -144,6 +127,8 @@ def __find_text_in_runs(runs: List[Run],
     """
     text_symbols = list(text)
     for run in runs:
+        if not run.text:
+            continue
         run_contains: List[str] = []
         for run_symbol in run.text:
             try:
@@ -161,6 +146,27 @@ def __find_text_in_runs(runs: List[Run],
                 continue
         if run_contains:
             yield run, ''.join(run_contains)
+
+
+def check_text_in_element(element: Run | Paragraph,
+                          text: str,
+                          strict: bool = False
+                          ) -> bool:
+    """Проверяет объект на содержание text.
+
+    :param element: Проверяемый объект.
+    :param text: Искомый текст.
+    :param strict:
+        True - проверка объекта на полное вхождение text.
+        False - проверка объекта на наличие text в объекте.
+    :return: Bool, Результат проверки.
+    """
+    if strict:
+        # Run`ы часто содержат пробельные символы по краям,
+        # которые не влияют на наличие/отсутствие искомого текста.
+        # strip() применяется, чтобы не резать лишний раз структуру.
+        return text == element.text.strip()
+    return text in element.text
 
 
 def __allocate_run_with_text(
