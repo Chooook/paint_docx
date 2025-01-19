@@ -30,10 +30,10 @@ class RunFinder:
     def __init__(self, document: Document):
         self.document = document
 
-    def get_runs_with_text_from_document(self,
-                                         text: str,
-                                         first_only: bool
-                                         ) -> List[Run]:
+    def search_runs(self,
+                    text: str,
+                    first_only: bool
+                    ) -> List[Run]:
         """Функция для получения списка объектов Run с текстом.
 
         :param text: Искомый текст.
@@ -41,18 +41,20 @@ class RunFinder:
         :return:
         """
         text = text.strip()
+        # TODO: класс не должен знать про покраску, изменить вывод
+        #  на наборы run`ов, придумать, где привести вывод в плоский вид
         runs_to_color = []
-        for paragraph in self.get_paragraphs_with_text(text, first_only):
-            for runs_list in self.get_runs_with_text_from_paragraph(
+        for paragraph in self.search_paragraphs(text, first_only):
+            for runs_list in self.__get_runs_sequences(
                     paragraph, text, first_only=first_only):
                 for run in runs_list:
                     runs_to_color.append(run)
         return runs_to_color
 
-    def get_paragraphs_with_text(self,
-                                 text: str,
-                                 first_only: bool = False
-                                 ) -> List[Paragraph]:
+    def search_paragraphs(self,
+                          text: str,
+                          first_only: bool = False
+                          ) -> List[Paragraph]:
         """Ищет объекты Paragraph, содержащие text.
 
         :param text: Искомый текст.
@@ -63,17 +65,17 @@ class RunFinder:
         """
         paragraphs = []
         for paragraph in self.document.paragraphs:
-            if self.check_text_in_element(paragraph, text, strict=False):
+            if self.__check_text_in_element(paragraph, text, strict=False):
                 paragraphs.append(paragraph)
             if first_only:
                 return paragraphs
         return paragraphs
 
-    def get_runs_with_text_from_paragraph(self,
-                                          paragraph: Paragraph,
-                                          text: str,
-                                          first_only: bool = False,
-                                          ) -> List[List[Run]]:
+    def __get_runs_sequences(self,
+                             paragraph: Paragraph,
+                             text: str,
+                             first_only: bool = False,
+                             ) -> List[List[Run]]:
         """Извлекает наборы объектов Run, которые в совокупности содержат text.
 
         :param paragraph: Paragraph, в котором осуществляется поиск.
@@ -84,10 +86,10 @@ class RunFinder:
         :return: Список наборов объектов Run, содержащих text.
         """
         runs = []
-        possible_runs = list(self.__find_text_in_runs(paragraph.runs, text))
+        possible_runs = list(self.__search_text_parts(paragraph.runs, text))
         for run_index, possible_run in enumerate(possible_runs):
             run, text_part = possible_run
-            if self.check_text_in_element(run, text, strict=True):
+            if self.__check_text_in_element(run, text, strict=True):
                 runs.append([run])
                 if first_only:
                     return runs
@@ -96,7 +98,7 @@ class RunFinder:
                 temp_text = []
                 for temp_possible_run in possible_runs[run_index:]:
                     temp_run, temp_text_part = temp_possible_run
-                    if self.check_text_in_element(
+                    if self.__check_text_in_element(
                             temp_run, temp_text_part, strict=True):
                         temp_runs.append(temp_run)
                         temp_text.append(temp_text_part)
@@ -116,7 +118,7 @@ class RunFinder:
         return runs
 
     @staticmethod
-    def __find_text_in_runs(runs: List[Run],
+    def __search_text_parts(runs: List[Run],
                             text: str
                             ) -> Generator[Tuple[Run, str], None, None]:
         """Итеративно ищет объекты Run, которые содержат text или его часть.
@@ -149,17 +151,17 @@ class RunFinder:
                 yield run, ''.join(run_contains)
 
     @staticmethod
-    def check_text_in_element(element: Run | Paragraph,
-                              text: str,
-                              strict: bool = False
-                              ) -> bool:
+    def __check_text_in_element(element: Run | Paragraph,
+                                text: str,
+                                strict: bool = False
+                                ) -> bool:
         """Проверяет объект на содержание text.
 
         :param element: Проверяемый объект.
         :param text: Искомый текст.
         :param strict:
-            True - проверка объекта на полное вхождение text.
-            False - проверка объекта на наличие text в объекте.
+            True - проверка объекта на равенство без учёта пробельных символов.
+            False - проверка на наличие text в объекте.
         :return: Bool, Результат проверки.
         """
         if strict:

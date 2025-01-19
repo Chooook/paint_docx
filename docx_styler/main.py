@@ -28,7 +28,7 @@ def color_text(document: Document,
     :param first_only: Флаг для покраски только первого вхождения.
     """
     rf = RunFinder(document)
-    for run in rf.get_runs_with_text_from_document(text, first_only):
+    for run in rf.search_runs(text, first_only):
         color_run(run, color)
 
 
@@ -48,5 +48,5 @@ def highlight_text(document: Document,
     :param first_only: Флаг для покраски только первого вхождения.
     """
     rf = RunFinder(document)
-    for run in rf.get_runs_with_text_from_document(text, first_only):
+    for run in rf.search_runs(text, first_only):
         highlight_run(run, color)
