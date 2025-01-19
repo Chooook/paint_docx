@@ -118,7 +118,7 @@ def get_runs_with_text_from_paragraph(paragraph: Paragraph,
                     temp_text.append(temp_text_part)
                 else:
                     temp_runs.append(__allocate_run_with_text(
-                        paragraph, temp_run, temp_text_part))
+                        temp_run, temp_text_part))
                     temp_text.append(temp_text_part)
                 if ''.join(temp_text).strip() == text:
                     runs.append(temp_runs)
@@ -163,32 +163,31 @@ def __find_text_in_runs(runs: List[Run],
             yield run, ''.join(run_contains)
 
 
-def __allocate_run_with_text(paragraph: Paragraph, run: Run, text: str) -> Run:
+def __allocate_run_with_text(
+        run: Run, text: str) -> Run:
     """Выделяет объект Run, содержащий необходимый текст.
 
     Разделяет исходный Run на 3 Run`а для отделения Run`а с текстом.
     Перезаписывает весь параграф.
-    Метод paragraph.append_runs добавляет Run с пробелом в начало,
-    эта функция очищает Run с пробелом для сохранения структуры параграфа.
     После разделения все три Run`а сохраняют стиль исходного.
-    Неявно изменяет исходный объект Document.
+    Неявно изменяет объект Document.
 
-    :param paragraph: Paragraph, содержащий необходимый Run.
     :param run: Run, который необходимо разделить.
     :param text: Текст, который необходимо выделить в отдельный Run.
     :return: Run, содержащий только необходимый текст.
     """
+    paragraph = run._parent
     runs = paragraph.runs
-    try:
-        run_index = [r.text for r in runs].index(run.text)
-    except ValueError:
-        # FIXME возможно неправильное определение индекса в случае идентичных
-        run_index = [r.text for r in runs].index(text)
+    run_index = [r.text for r in runs].index(run.text)
     new_runs = __split_run(run, text)
-    run_with_text = new_runs[1]  # Run с нужным текстом второй, см. __split_run
+    # Run с нужным текстом второй, см. __split_run
+    run_with_text = new_runs[1]
+
     paragraph.clear()
-    paragraph.append_runs(runs[:run_index] + new_runs + runs[run_index + 1:])
-    # Очистка побочного Run`а с пробелом для сохранения текста параграфа
+    paragraph.append_runs(
+        runs[:run_index] + new_runs + runs[run_index + 1:])
+    # Очистка побочного Run`а с пробелом
+    # для сохранения исходного текста параграфа
     paragraph.runs[FIRST].clear()
     return run_with_text
 
