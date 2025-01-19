@@ -23,7 +23,7 @@ from docx.text.run import Run
 
 from docx import Document
 
-from .utils import FIRST
+from docx_styler.utils import FIRST
 
 
 class RunFinder:
