@@ -13,6 +13,8 @@ if __name__ == '__main__':
     expected = 'СЛОВО'
     docx_styler.color_text(doc, expected, color='green')
     docx_styler.highlight_text(doc, expected, color='darkred')
+    docx_styler.color_text(doc, 'ФРАЗА КОТОРУЮ КРАСИМ', color='green')
+    docx_styler.highlight_text(doc, 'ФРАЗА КОТОРУЮ КРАСИМ', color='darkred')
 
     docx_styler.color_text(doc, 'параграф', color=(0, 0, 255))
     docx_styler.color_text(doc, 'текстом', color=(0, 0, 300))
