@@ -23,16 +23,30 @@ from docx.text.run import Run
 
 from docx import Document
 
+from .run_collector import RunCollector
 from docx_styler.utils import FIRST
 
 
 class RunFinder:
     def __init__(self, document: Document):
-        self.document = document
+        self.run_collector = RunCollector(document)
 
+    # TODO Совместить с методом ниже и переделать на генератор, т.к.
+    #  в случае пересборки параграфа, все ссылки на объекты Run меняются,
+    #  следовательно, RunCollector постоянно перезапускать,
+    #  что накладно, но пока другого выхода не вижу,
+    #  т.к. переделать в генератор не получится полностью.
+    #  Можно попробовать реализовать обновление только отдельных
+    #  параграфов в RunCollector, если ссылка на параграф не меняется,
+    #  для этого нужно сохранять также параграфы,
+    #  но итерацию совершать только по объектам Run, при этом
+    #  нужно обновлять индекс, с которого начинается итерация,
+    #  скорее всего, как в поисковике, так и в RunCollector.
+    #  !!! ССЫЛКА СБИВАЕТСЯ ПОСТОЯННО, ДАЖЕ ПРИ ПОЛУЧЕНИИ ОБЪЕКТА RUN !!!
+    #  ТАК ЧТО НЕТ СМЫСЛА ПЕРЕСОБИРАТЬ, Т.К. ВСЕ ОБРАЩЕНИЯ ИДУТ ПО ССЫЛКАМ
     def search_runs(self,
                     text: str,
-                    first_only: bool
+                    first_only: bool = False
                     ) -> List[Run]:
         """Функция для получения списка объектов Run с текстом.
 
@@ -44,41 +58,17 @@ class RunFinder:
         # TODO: класс не должен знать про покраску, изменить вывод
         #  на наборы run`ов, придумать, где привести вывод в плоский вид
         runs_to_color = []
-        for paragraph in self.search_paragraphs(text, first_only):
-            for runs_list in self.__get_runs_sequences(
-                    paragraph, text, first_only=first_only):
-                for run in runs_list:
-                    runs_to_color.append(run)
+        for runs_list in self.__get_runs_sequences(text, first_only=first_only):
+            for run in runs_list:
+                runs_to_color.append(run)
         return runs_to_color
 
-    def search_paragraphs(self,
-                          text: str,
-                          first_only: bool = False
-                          ) -> List[Paragraph]:
-        """Ищет объекты Paragraph, содержащие text.
-
-        :param text: Искомый текст.
-        :param first_only:
-            True - возвращается список с первым соответствующим Paragraph.
-            False - возвращается список со всеми соответствующими Paragraph.
-        :return: Список объектов Paragraph, содержащих text.
-        """
-        paragraphs = []
-        for paragraph in self.document.paragraphs:
-            if self.__check_text_in_element(paragraph, text, strict=False):
-                paragraphs.append(paragraph)
-            if first_only:
-                return paragraphs
-        return paragraphs
-
     def __get_runs_sequences(self,
-                             paragraph: Paragraph,
                              text: str,
                              first_only: bool = False,
                              ) -> List[List[Run]]:
         """Извлекает наборы объектов Run, которые в совокупности содержат text.
 
-        :param paragraph: Paragraph, в котором осуществляется поиск.
         :param text: Искомый текст.
         :param first_only:
             True - возвращается список с первым соответствующим Run.
@@ -86,35 +76,61 @@ class RunFinder:
         :return: Список наборов объектов Run, содержащих text.
         """
         runs = []
-        possible_runs = list(self.__search_text_parts(paragraph.runs, text))
+        possible_runs = list(
+            self.__search_text_parts(self.run_collector, text))
         for run_index, possible_run in enumerate(possible_runs):
             run, text_part = possible_run
             if self.__check_text_in_element(run, text, strict=True):
                 runs.append([run])
                 if first_only:
                     return runs
-            else:
-                temp_runs = []
-                temp_text = []
-                for temp_possible_run in possible_runs[run_index:]:
-                    temp_run, temp_text_part = temp_possible_run
-                    if self.__check_text_in_element(
-                            temp_run, temp_text_part, strict=True):
-                        temp_runs.append(temp_run)
-                        temp_text.append(temp_text_part)
-                    else:
+                continue
+            temp_runs = []
+            temp_text = []
+            for temp_possible_run in possible_runs[run_index:]:
+                temp_run, temp_text_part = temp_possible_run
+                # FIXME по какой-то причине в аллокацию попадает run
+                #  с несоответствующим текстом,
+                #  ошибка в __search_text_parts, вероятно,
+                #  нужно добиться повторяемости,
+                #  т.к. пока что выглядит как случайность
+                print('*'*200)
+                print('='*100)
+                print(temp_run.text)
+                print(temp_text_part)
+                print('='*100)
+                if self.__check_text_in_element(
+                        temp_run, temp_text_part, strict=True):
+                    temp_runs.append(temp_run)
+                    temp_text.append(temp_text_part)
+                else:
+                    try:
+                        # TODO не аллоцировать пока не соберется полный текст.
+                        # FIXME Есть вероятность, что в некоторых случаях, при нахождении слова,
+                        #  поиск продолжается, и выражение ниже уходит в ошибку,
+                        #  вследствие чего необходимый Run выделен, но не покрашен.
+                        #  Нужно проверять на соответствие тексту в конце итерации или сразу после начала.
+                        #  Альтернативы?
+                        print(temp_run.text)
+                        print(temp_text)
                         temp_runs.append(self.__allocate_run_with_text(
                             temp_run, temp_text_part))
                         temp_text.append(temp_text_part)
-                    if ''.join(temp_text).strip() == text:
-                        runs.append(temp_runs)
-                        if first_only:
-                            return runs
-                        break
-                    elif ''.join(temp_text) in text:
+                    except ValueError:
+                        print([r.text for r in temp_runs])
+                        print(temp_text)
+                        temp_runs = []
+                        temp_text = []
                         continue
-                    else:
-                        break
+                if ''.join(temp_text).strip() == text:
+                    runs.append(temp_runs)
+                    if first_only:
+                        return runs
+                    break
+                elif ''.join(temp_text) in text:
+                    continue
+                else:
+                    break
         return runs
 
     @staticmethod
