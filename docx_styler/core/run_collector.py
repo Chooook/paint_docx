@@ -1,6 +1,6 @@
 import gc
 from functools import lru_cache
-from typing import Iterator
+from typing import Iterator, Tuple
 
 from docx import Document
 from docx.text.run import Run
@@ -8,6 +8,14 @@ from docx.text.run import Run
 
 class RunCollector:
     def __init__(self, document: Document) -> None:
+        @lru_cache(maxsize=1)
+        def create_space_runs() -> Tuple[Run, Run]:
+            # Для создания Run вне текущего документа, нужен объект Document
+            temp_doc = Document()
+            return (temp_doc.add_paragraph().add_run(' '),
+                    temp_doc.add_paragraph().add_run('\n'))
+
+        self.__space_run, self.__line_brake_run = create_space_runs()
         self.document = document
         self.document_runs = None
 
@@ -25,6 +33,7 @@ class RunCollector:
         runs = []
         for paragraph in self.document.paragraphs:
             runs.extend(paragraph.runs)
+            runs.extend([self.__space_run])
         self.text_runs = runs
         if self.document_runs:
             self.update_document_runs(reload_all=False)
@@ -48,6 +57,7 @@ class RunCollector:
                 for cell in row.cells:
                     for paragraph in cell.paragraphs:
                         runs.extend(paragraph.runs)
+                        runs.extend([self.__space_run])
         return runs
 
     def __update_tables_runs_by_columns(self) -> list[Run]:
@@ -60,6 +70,7 @@ class RunCollector:
                     cell = table.cell(row, col)
                     for paragraph in cell.paragraphs:
                         runs.extend(paragraph.runs)
+                        runs.extend([self.__space_run])
         return runs
 
     def update_footnotes_runs(self) -> list[Run]:
@@ -72,31 +83,25 @@ class RunCollector:
         for footnote in document_footnotes:
             for paragraph in footnote.paragraphs:
                 runs.extend(paragraph.runs)
+                runs.extend([self.__space_run])
         self.footnotes_runs = runs
         if self.document_runs:
             self.update_document_runs(reload_all=False)
         return self.footnotes_runs
 
     def update_document_runs(self, reload_all: bool = True) -> list[Run]:
-
-        @lru_cache(maxsize=1)
-        def create_run_with_space() -> Run:
-            # Для создания Run вне текущего документа, нужен объект Document
-            return Document().add_paragraph().add_run('\n')
-
         if reload_all:
             self.update_text_runs()
             self.update_tables_runs()
             self.update_footnotes_runs()
         # Для разделения объектов Run в различных сущностях документа
-        run_with_space = create_run_with_space()
         del self.document_runs
         self.document_runs = (self.text_runs
-                              + [run_with_space]
+                              + [self.__line_brake_run]
                               + self.tables_runs_by_rows
-                              + [run_with_space]
+                              + [self.__line_brake_run]
                               + self.tables_runs_by_columns
-                              + [run_with_space]
+                              + [self.__line_brake_run]
                               + self.footnotes_runs)
         # Очистка памяти необходима, т.к. при работе с изменяемыми объектами,
         # в памяти остаются неиспользуемые ссылки, можно проверить с помощью:
