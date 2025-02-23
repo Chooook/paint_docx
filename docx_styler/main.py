@@ -14,8 +14,7 @@ from .core import (
 
 def color_text(document: Document,
                text: str,
-               color: str | Tuple[int, int, int],
-               first_only: bool = False,
+               color: str | Tuple[int, int, int]
                ) -> None:
     """Функция для покраски частей текста в .docx.
 
@@ -25,17 +24,15 @@ def color_text(document: Document,
     :param document: Экземпляр документа, который красим.
     :param text: Строка текста, которую нужно покрасить.
     :param color: Цвет (из класса Color), в который хотим покрасить.
-    :param first_only: Флаг для покраски только первого вхождения.
     """
     rf = RunFinder(document)
-    for run in rf.search_runs(text, first_only):
+    for run in rf.search_and_allocate(text):
         color_run(run, color)
 
 
 def highlight_text(document: Document,
                    text: str,
                    color: str,
-                   first_only: bool = False,
                    ) -> None:
     """Функция для покраски частей текста в .docx.
 
@@ -45,8 +42,7 @@ def highlight_text(document: Document,
     :param document: Экземпляр документа, который красим.
     :param text: Строка текста, которую нужно покрасить.
     :param color: Цвет (из класса Color), в который хотим покрасить.
-    :param first_only: Флаг для покраски только первого вхождения.
     """
     rf = RunFinder(document)
-    for run in rf.search_runs(text, first_only):
+    for run in rf.search_and_allocate(text):
         highlight_run(run, color)
