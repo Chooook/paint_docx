@@ -12,220 +12,122 @@
 #  Можно создать перегрузку только входной функции, так как дальше она
 #  будет передавать работу в другие функции, в другие функции можно
 #  просто добавить необязательный параметр. (?)
-# TODO: на данный момент не учитывается что фраза может быть в нескольких
-#  параграфах, а это нужно как минимум для реализации поиска по таблицам.
-# TODO: реализовать поиск по таблицам
-from copy import deepcopy
-from typing import Generator, List, Tuple
 
-from docx.text.paragraph import Paragraph
-from docx.text.run import Run
+import re
+from copy import deepcopy
 
 from docx import Document
+from docx.text.paragraph import Paragraph
+from typing_extensions import Match, Pattern
 
-from .run_collector import RunCollector
-from docx_styler.utils import FIRST
+from docx_styler.core.runs_map import RunWithSpan, RunsMap
 
 
 class RunFinder:
     def __init__(self, document: Document):
-        self.run_collector = RunCollector(document)
+        self.runs_map = RunsMap(document)
 
-    # TODO Совместить с методом ниже и переделать на генератор, т.к.
-    #  в случае пересборки параграфа, все ссылки на объекты Run меняются,
-    #  следовательно, RunCollector постоянно перезапускать,
-    #  что накладно, но пока другого выхода не вижу,
-    #  т.к. переделать в генератор не получится полностью.
-    #  Можно попробовать реализовать обновление только отдельных
-    #  параграфов в RunCollector, если ссылка на параграф не меняется,
-    #  для этого нужно сохранять также параграфы,
-    #  но итерацию совершать только по объектам Run, при этом
-    #  нужно обновлять индекс, с которого начинается итерация,
-    #  скорее всего, как в поисковике, так и в RunCollector.
-    #  !!! ССЫЛКА СБИВАЕТСЯ ПОСТОЯННО, ДАЖЕ ПРИ ПОЛУЧЕНИИ ОБЪЕКТА RUN !!!
-    #  ТАК ЧТО НЕТ СМЫСЛА ПЕРЕСОБИРАТЬ, Т.К. ВСЕ ОБРАЩЕНИЯ ИДУТ ПО ССЫЛКАМ
-    def search_runs(self,
-                    text: str,
-                    first_only: bool = False
-                    ) -> List[Run]:
-        """Функция для получения списка объектов Run с текстом.
+    def search_and_allocate(self, text_pattern: str):
+        result_runs = []
+        pattern = re.compile(text_pattern)
+        matches = list(re.finditer(pattern, self.runs_map.text))
 
-        :param text: Искомый текст.
-        :param first_only: Флаг для поиска только первого вхождения.
-        :return:
-        """
-        text = text.strip()
-        # TODO: класс не должен знать про покраску, изменить вывод
-        #  на наборы run`ов, придумать, где привести вывод в плоский вид
-        runs_to_color = []
-        for runs_list in self.__get_runs_sequences(text, first_only=first_only):
-            for run in runs_list:
-                runs_to_color.append(run)
-        return runs_to_color
+        for match in matches:
+            matching_runs = self.runs_map.find_runs_by_span(
+                match.start(), match.end())
 
-    def __get_runs_sequences(self,
-                             text: str,
-                             first_only: bool = False,
-                             ) -> List[List[Run]]:
-        """Извлекает наборы объектов Run, которые в совокупности содержат text.
-
-        :param text: Искомый текст.
-        :param first_only:
-            True - возвращается список с первым соответствующим Run.
-            False - возвращается список со всеми соответствующими Run.
-        :return: Список наборов объектов Run, содержащих text.
-        """
-        runs = []
-        possible_runs = list(
-            self.__search_text_parts(self.run_collector, text))
-        for run_index, possible_run in enumerate(possible_runs):
-            run, text_part = possible_run
-            if self.__check_text_in_element(run, text, strict=True):
-                runs.append([run])
-                if first_only:
-                    return runs
-                continue
-            temp_runs = []
-            temp_text = []
-            for temp_possible_run in possible_runs[run_index:]:
-                temp_run, temp_text_part = temp_possible_run
-                # FIXME по какой-то причине в аллокацию попадает run
-                #  с несоответствующим текстом,
-                #  ошибка в __search_text_parts, вероятно,
-                #  нужно добиться повторяемости,
-                #  т.к. пока что выглядит как случайность
-                print('*'*200)
-                print('='*100)
-                print(temp_run.text)
-                print(temp_text_part)
-                print('='*100)
-                if self.__check_text_in_element(
-                        temp_run, temp_text_part, strict=True):
-                    temp_runs.append(temp_run)
-                    temp_text.append(temp_text_part)
-                else:
-                    try:
-                        # TODO не аллоцировать пока не соберется полный текст.
-                        # FIXME Есть вероятность, что в некоторых случаях, при нахождении слова,
-                        #  поиск продолжается, и выражение ниже уходит в ошибку,
-                        #  вследствие чего необходимый Run выделен, но не покрашен.
-                        #  Нужно проверять на соответствие тексту в конце итерации или сразу после начала.
-                        #  Альтернативы?
-                        print(temp_run.text)
-                        print(temp_text)
-                        temp_runs.append(self.__allocate_run_with_text(
-                            temp_run, temp_text_part))
-                        temp_text.append(temp_text_part)
-                    except ValueError:
-                        print([r.text for r in temp_runs])
-                        print(temp_text)
-                        temp_runs = []
-                        temp_text = []
-                        continue
-                if ''.join(temp_text).strip() == text:
-                    runs.append(temp_runs)
-                    if first_only:
-                        return runs
-                    break
-                elif ''.join(temp_text) in text:
+            for run_info in matching_runs:
+                if run_info.run.text == text_pattern:
+                    result_runs.append(run_info.run)
                     continue
-                else:
-                    break
-        return runs
+
+                matching_text = self.__define_metching_text(match, run_info)
+                allocated_runs = self.__allocate_runs(
+                    matching_text, run_info, pattern)
+                result_runs += allocated_runs
+
+        return result_runs
 
     @staticmethod
-    def __search_text_parts(runs: List[Run],
-                            text: str
-                            ) -> Generator[Tuple[Run, str], None, None]:
-        """Итеративно ищет объекты Run, которые содержат text или его часть.
+    def __define_metching_text(match: Match, run_info: RunWithSpan):
+        match_text = match.group()
+        run_text = run_info.run.text
+        m_start, m_end = match.start(), match.end()
+        r_start, r_end = run_info.start, run_info.end
 
-        :param runs: Список объектов Run, по которым осуществляется поиск.
-        :param text: Текст, по которому осуществляется поиск.
-        :return: Кортеж с объектом Run, содержащим text или его часть
-            и часть текста, которая была найдена.
-        """
-        text_symbols = list(text)
-        for run in runs:
-            if not run.text:
-                continue
-            run_contains: List[str] = []
-            for run_symbol in run.text:
-                try:
-                    symbol = text_symbols.pop(FIRST)
-                    if run_symbol != symbol:
-                        run_contains.clear()
-                        text_symbols = list(text)
-                    else:
-                        run_contains.append(symbol)
-                except IndexError:
-                    if run_contains:
-                        yield run, ''.join(run_contains)
-                    run_contains.clear()
-                    text_symbols = list(text)
-                    continue
-            if run_contains:
-                yield run, ''.join(run_contains)
+        if r_start < m_start:
+            if r_end >= m_end:
+                matching_text = match_text
+            else:  # r_end < m_end
+                matching_text = run_text[m_start - r_end:]
 
-    @staticmethod
-    def __check_text_in_element(element: Run | Paragraph,
-                                text: str,
-                                strict: bool = False
-                                ) -> bool:
-        """Проверяет объект на содержание text.
+        elif r_start == m_start:
+            if r_end >= m_end:
+                matching_text = match_text
+            else:  # r_end < m_end
+                matching_text = run_text
 
-        :param element: Проверяемый объект.
-        :param text: Искомый текст.
-        :param strict:
-            True - проверка объекта на равенство без учёта пробельных символов.
-            False - проверка на наличие text в объекте.
-        :return: Bool, Результат проверки.
-        """
-        if strict:
-            # Run`ы часто содержат пробельные символы по краям,
-            # которые не влияют на наличие/отсутствие искомого текста.
-            # strip() применяется, чтобы не резать лишний раз структуру.
-            return text == element.text.strip()
-        return text in element.text
+        else:  # r_start > m_start
+            if r_end <= m_end:
+                matching_text = run_text
+            else:  # r_end > m_end
+                matching_text = run_text[r_start - m_end:]
 
-    def __allocate_run_with_text(
-            self, run: Run, text: str) -> Run:
-        """Выделяет объект Run, содержащий необходимый текст.
+        return matching_text
 
-        Разделяет исходный Run на 3 Run`а для отделения Run`а с текстом.
-        Перезаписывает весь параграф.
-        После разделения все три Run`а сохраняют стиль исходного.
-        Неявно изменяет объект Document.
+    def __allocate_runs(self,
+                        matching_text: str,
+                        run_info: RunWithSpan,
+                        base_pattern: Pattern):
+        run = run_info.run
+        paragraph: Paragraph = run._parent
+        runs_elements = [r.element for r in paragraph.runs]
+        run_index = runs_elements.index(run.element)
 
-        :param run: Run, который необходимо разделить.
-        :param text: Текст, который необходимо выделить в отдельный Run.
-        :return: Run, содержащий только необходимый текст.
-        """
-        paragraph = run._parent
-        runs = paragraph.runs
-        run_index = [r.text for r in runs].index(run.text)
-        new_runs = self.__split_run(run, text)
-        # Run с нужным текстом второй, см. __split_run
-        run_with_text = new_runs[1]
+        runs_before = paragraph.runs[:run_index]
+        runs_after = paragraph.runs[run_index + 1:]
+
+        result_runs = []
+        middle_runs = []
+
+        if re.search(base_pattern, matching_text):
+            matching_run, new_runs = self.__split_run(matching_text, run)
+            result_runs.append(matching_run)
+            middle_runs += new_runs
+
+            while matching_run.element != new_runs[-1].element:
+                matching_run, new_runs = self.__split_run(
+                    matching_text, new_runs[-1])
+                result_runs.append(matching_run)
+                middle_runs += new_runs
+        else:
+            matching_run, new_runs = self.__split_run(matching_text, run)
+            result_runs.append(matching_run)
+            middle_runs += new_runs
 
         paragraph.clear()
-        paragraph.append_runs(
-            runs[:run_index] + new_runs + runs[run_index + 1:])
-        # Очистка побочного Run`а с пробелом
-        # для сохранения исходного текста параграфа
-        paragraph.runs[FIRST].clear()
-        return run_with_text
+        paragraph_runs = runs_before + middle_runs + runs_after
+        for run in paragraph_runs:
+            paragraph._element.append(run.element)
+
+        return result_runs
 
     @staticmethod
-    def __split_run(run: Run, text: str) -> List[Run]:
-        """Разделяет исходный Run на 3 Run`а для отделения Run`а с текстом.
+    def __split_run(split_by, run):
+        before_text, middle_text, after_text = run.text.partition(split_by)
+        result_runs = []
 
-        :param run: Исходный Run.
-        :param text: Текст, который необходимо выделить в отдельный Run.
-        :return: Набор объектов Run, в совокупности равные исходному Run.
-        """
-        first_r = deepcopy(run)
-        second_r = deepcopy(run)
-        third_r = run
-        first_r.text, third_r.text = run.text.split(text, maxsplit=1)
-        second_r.text = text
-        return [first_r, second_r, third_r]
+        if before_text:
+            before_run = deepcopy(run)
+            before_run.text = before_text
+            result_runs.append(before_run)
+
+        run.text = middle_text
+        result_runs.append(run)
+
+        if after_text:
+            after_run = deepcopy(run)
+            after_run.text = after_text
+            result_runs.append(after_run)
+
+        return run, result_runs
