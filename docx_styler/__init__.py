@@ -7,10 +7,10 @@ TODO:
     * Расширенная работа со стилями (шрифт, размер, написание, ...)
 """
 
-from .core import RunCollector, RunFinder, color_run, highlight_run
+from .core import RunsMap, RunFinder, color_run, highlight_run
 from .main import color_text, highlight_text
 
 __all__ = (
-    'RunCollector', 'RunFinder', 'color_run', 'highlight_run',
+    'RunsMap', 'RunFinder', 'color_run', 'highlight_run',
     'color_text', 'highlight_text',
 )
