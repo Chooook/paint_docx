@@ -55,31 +55,3 @@ class TextToHighlight:
                 raise ValueError(
                     'Expected all elements of "words_to_highlight" to be '
                     f'in "text" field. Not found "{string}" in "text" field')
-
-
-@dataclass(frozen=True)
-class SpecifiedTextToHighlight(TextToHighlight):
-    """
-    Класс SpecifiedTextHighlight предназначен для управления и валидации строк,
-    которые необходимо выделить в заданном тексте.
-    Этот класс обеспечивает наличие указанных строк в тексте и гарантирует,
-    что все поля класса не пустые и имеют корректные типы.
-    Предоставляет дополнительное поле спецификатора
-    для определения вида объекта.
-
-    :param text: Текст, в котором будут выделены указанные строки.
-    :param words_to_highlight: Список слов, которые необходимо выделить.
-    :param specifier: Спецификатор для определения вида объекта.
-    """
-    __slots__ = ['specifier']
-
-    specifier: str
-
-    def __post_init__(self):
-        """Validate that all fields are non-empty and of the correct types."""
-        super().__post_init__()
-
-        if not isinstance(self.specifier, str):
-            raise TypeError(
-                f'Expected "specifier" to be of type "str", '
-                f'got {type(self.specifier).__name__}')
