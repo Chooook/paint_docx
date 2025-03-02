@@ -29,7 +29,7 @@ class RunFinder:
 
     def search_and_allocate(self, text_pattern: str):
         result_runs = []
-        pattern = re.compile(text_pattern)
+        pattern = re.compile(re.escape(text_pattern))
         matches = list(re.finditer(pattern, self.runs_map.text))
 
         for match in matches:
