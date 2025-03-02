@@ -18,7 +18,6 @@ from copy import deepcopy
 
 from docx import Document
 from docx.text.paragraph import Paragraph
-from typing_extensions import Match, Pattern
 
 from docx_styler.core.runs_map import RunWithSpan, RunsMap
 
@@ -49,7 +48,7 @@ class RunFinder:
         return result_runs
 
     @staticmethod
-    def __define_metching_text(match: Match, run_info: RunWithSpan):
+    def __define_metching_text(match: re.Match, run_info: RunWithSpan):
         match_text = match.group()
         run_text = run_info.run.text
         m_start, m_end = match.start(), match.end()
@@ -78,7 +77,7 @@ class RunFinder:
     def __allocate_runs(self,
                         matching_text: str,
                         run_info: RunWithSpan,
-                        base_pattern: Pattern):
+                        base_pattern: re.Pattern):
         run = run_info.run
         paragraph: Paragraph = run._parent
         runs_elements = [r.element for r in paragraph.runs]
