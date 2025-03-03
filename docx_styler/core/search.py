@@ -45,6 +45,7 @@ class RunFinder:
                     matching_text, run_info, pattern)
                 result_runs += allocated_runs
 
+        self.runs_map.reload()
         return result_runs
 
     @staticmethod
