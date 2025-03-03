@@ -61,11 +61,8 @@ class RunsMap:
 
         # table runs by columns:
         for table in self.document.tables:
-            num_rows = len(table.rows)
-            num_cols = len(table.columns)
-            for col in range(num_cols):
-                for row in range(num_rows):
-                    cell = table.cell(row, col)
+            for col in table.columns:
+                for cell in col.cells:
                     for paragraph in cell.paragraphs:
                         self.__get_runs_and_text(paragraph)
         self.__document_strings += '\n'
