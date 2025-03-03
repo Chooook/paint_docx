@@ -80,7 +80,8 @@ class RunsMap:
 
         self.text = ''.join(self.__document_strings)
 
-        del self.__document_strings, self.__last_span_pos
+        self.__document_strings.clear()
+        self.__last_span_pos = 0
         gc.collect()
 
 
