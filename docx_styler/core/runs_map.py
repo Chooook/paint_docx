@@ -47,12 +47,18 @@ class RunsMap:
         # text runs:
         for paragraph in self.document.paragraphs:
             self.__get_runs_and_text(paragraph)
+        self.__document_strings += '\n'
+        self.__last_span_pos += 1
+
         # table runs by rows:
         for table in self.document.tables:
             for row in table.rows:
                 for cell in row.cells:
                     for paragraph in cell.paragraphs:
                         self.__get_runs_and_text(paragraph)
+        self.__document_strings += '\n'
+        self.__last_span_pos += 1
+
         # table runs by columns:
         for table in self.document.tables:
             num_rows = len(table.rows)
@@ -62,6 +68,9 @@ class RunsMap:
                     cell = table.cell(row, col)
                     for paragraph in cell.paragraphs:
                         self.__get_runs_and_text(paragraph)
+        self.__document_strings += '\n'
+        self.__last_span_pos += 1
+
         # footnotes runs:
         try:
             # Атрибут footnotes в Document существует не всегда
