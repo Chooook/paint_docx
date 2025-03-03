@@ -40,7 +40,7 @@ class RunFinder:
                     result_runs.append(run_info.run)
                     continue
 
-                matching_text = self.__define_metching_text(match, run_info)
+                matching_text = self.__define_matching_text(match, run_info)
                 allocated_runs = self.__allocate_runs(
                     matching_text, run_info, pattern)
                 result_runs += allocated_runs
@@ -48,7 +48,7 @@ class RunFinder:
         return result_runs
 
     @staticmethod
-    def __define_metching_text(match: re.Match, run_info: RunWithSpan):
+    def __define_matching_text(match: re.Match, run_info: RunWithSpan):
         match_text = match.group()
         run_text = run_info.run.text
         m_start, m_end = match.start(), match.end()

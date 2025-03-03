@@ -22,13 +22,13 @@ class RunsMap:
         self.__document_strings = []
 
         self.text: str = ''
-        self.runs_map: list[RunWithSpan] = []
+        self.map: list[RunWithSpan] = []
 
-        self.reload()
+        self.reload()  # initial load
 
     def find_runs_by_span(self, start, end) -> list[RunWithSpan]:
         runs: set[RunWithSpan] = set()
-        for run in self.runs_map:
+        for run in self.map:
             if (
                 run.start <= start < run.end
                 or run.start < end <= run.end
@@ -41,7 +41,7 @@ class RunsMap:
 
     def reload(self):
         self.text = ''
-        self.runs_map.clear()
+        self.map.clear()
         self.__last_span_pos = 0
 
         # text runs:
@@ -84,7 +84,6 @@ class RunsMap:
         self.__last_span_pos = 0
         gc.collect()
 
-
     def __get_runs_and_text(self, paragraph):
         self.__document_strings.append(' ')
         self.__last_span_pos += 1
@@ -93,7 +92,7 @@ class RunsMap:
 
         for run in paragraph.runs:
             run_len = len(run.text)
-            self.runs_map.append(
+            self.map.append(
                 RunWithSpan(start=self.__last_span_pos,
                             end=self.__last_span_pos + run_len,
                             run=run))
