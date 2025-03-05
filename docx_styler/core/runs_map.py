@@ -91,6 +91,8 @@ class RunsMap:
         self.__document_strings.append(paragraph_text)
 
         for run in paragraph.runs:
+            if not run.text:
+                continue
             run_len = len(run.text)
             self.map.append(
                 RunWithSpan(start=self.__last_span_pos,
