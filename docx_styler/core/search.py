@@ -71,7 +71,7 @@ class RunFinder:
             if r_end <= m_end:
                 matching_text = run_text
             else:  # r_end > m_end
-                matching_text = run_text[r_start - m_end:]
+                matching_text = run_text[:m_end - r_start]
 
         return matching_text
 
